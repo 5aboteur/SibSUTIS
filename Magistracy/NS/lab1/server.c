@@ -32,19 +32,7 @@ int main(int argc, char **argv)
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const void *) &optval,
 		sizeof(int)) < 0)
 		dumperr("setsockopt");
-/*
-	struct timeval timeout;
-    timeout.tv_sec = 100;
-    timeout.tv_usec = 0;
-
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout,
-        sizeof(timeout)) < 0)
-        dumperr("setsockopt");
-
-    if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *) &timeout,
-        sizeof(timeout)) < 0)
-        dumperr("setsockopt");
-*/
+	
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -97,19 +85,12 @@ int main(int argc, char **argv)
 
 		if (!(cnt % 10)) {
 			printf("\033[31mTransmission failed! Try again..\n");
-//			printf("\033[31mSome data may lost!\n");
-
-//			if ((nbytes = sendto(sock, "F", 1, 0,
-//				(struct sockaddr *) &clnt_addr, clnt_len)) < 0)
-//				dumperr("sendto (server)");
-//			printf("NBYTES: %d\n", nbytes);
 		}
 		else {
 			printf("\033[32mTransmission succeed!\n");
 			if ((nbytes = sendto(sock, "G", 1, 0,
 				(struct sockaddr *) &clnt_addr, clnt_len)) < 0)
 				dumperr("sendto (server)");
-//			printf("NBYTES: %d\n", nbytes);
 		}
 
 		printf("\033[34m****************************************************\033[0m\n");
