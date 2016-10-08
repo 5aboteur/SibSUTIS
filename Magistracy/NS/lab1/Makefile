@@ -10,4 +10,4 @@ server: server.c
 	$(CC) $(CFLAGS) server.c -o server
 
 clean:
-	rm -rf client server
+	rm -f client server
