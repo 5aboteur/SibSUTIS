@@ -18,40 +18,6 @@ void dumperr(char *str)
     exit(1);
 }
 
-char *rand_str_gen(char *str, int size)
-{
-	int i;
-	const char charset[] = "abcdefghijklmnopqrstuvwxyz"
-							"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-							"0123456789,.?@#$%^&*()[]{}|";
-
-	if (size--) {
-		for (i = 0; i < size; ++i) {
-			int key = rand() % (int)(sizeof(charset) - 1);
-			str[i] = charset[key];
-		}
-		str[size] = '\0';
-
-		return str;
-	}
-	else dumperr("rand_str_gen (client)");
-
-	return str;
-}
-
-char *rand_str_alloc(int size)
-{
-	char *s = malloc(size + 1);
-
-	if (s) {
-		rand_str_gen(s, size);
-		return s;
-	}
-	else dumperr("rand_str_alloc (client)");
-
-	return s;
-}
-
 int main(int argc, char **argv)
 {
 	if (argc < 4) {
