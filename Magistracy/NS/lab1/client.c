@@ -10,7 +10,6 @@
 #include <time.h>
 #include <unistd.h>
 
-//#define BUFSIZE 1024
 #define NPACKS  100
 
 void dumperr(char *str)
@@ -106,8 +105,6 @@ int main(int argc, char **argv)
 			if (nbytes = recvfrom(sock, ans, 1, 0, (struct sockaddr *) &serv_addr,
 				(socklen_t *) &serv_len) > 0)
 				break;
-//				dumperr("recvfrom (client)");
-
 		}
 
 		sleep(1);
