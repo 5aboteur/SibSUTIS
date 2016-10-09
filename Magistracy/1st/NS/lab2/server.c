@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 			bzero(buf, BUFSIZE);
 
 			if (recv(sock, buf, BUFSIZE, 0) < 0)
-				dumperr("read (server)");
+				dumperr("recv (server)");
 
 			int buflen = strlen(buf);
 
