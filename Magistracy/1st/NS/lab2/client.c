@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 		"Data:\033[0m %s\n\n", file_len, msg);
 
 	if (send(sock, msg, file_len, 0) < 0)
-		dumperr("write (client)");
+		dumperr("send (client)");
 
 	fclose(fp);
 	close(sock);
