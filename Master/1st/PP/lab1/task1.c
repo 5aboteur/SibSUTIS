@@ -5,7 +5,7 @@
 #include <emmintrin.h>
 //#include <sys/time.h>
 
-/************************************* WINDOWS /*************************************/
+/************************************* WINDOWS **************************************/
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <stdint.h> // portable: uint64_t   MSVC: __int64 
@@ -34,7 +34,7 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
 	return 0;
 }
-/************************************* WINDOWS /*************************************/
+/************************************* WINDOWS **************************************/
 
 #define EPS 1E-6
 #define REP 20
