@@ -63,7 +63,6 @@ void saxpy_sse(float * __restrict x, float * __restrict y, float a, int n)
 		yy[i] = _mm_add_ps(z, yy[i]);		// [z0 + yy0, ..]
 	}
 
-	/* Loop reminder (n % 4 != 0) ? */
 	for (int i = k * 4; i < n; ++i)
 		y[i] = a * x[i] + y[i];
 }
@@ -88,7 +87,6 @@ void daxpy_sse(double * __restrict x, double * __restrict y, double a, int n)
 		yy[i] = _mm_add_pd(z, yy[i]);		// [z0 + yy0, ..] 
 	}
 
-	/* Loop reminder (n % 4 != 0) ? */
 	for (int i = k * 2; i < n; ++i)
 		y[i] = a * x[i] + y[i];
 }
