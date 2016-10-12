@@ -1,0 +1,78 @@
+task1.c
+***************************************************************************
+Name:		Intel Atom N2600 (Cedarview)
+Frequency:	1600 MHz
+Cores:		2
+Threads:	4
+Instr sets:	MMX(+), SSE, SSE2, SSE3, SSSE3
+
+L1 Data cache:	2 x 24 KBytes, 6-way set associative, 64-byte line size
+L1 Instr cache:	2 x 32 KBytes, 8-way set associative, 64-byte line size
+L2 cache:	2 x 512 KBytes, 8-way set associative, 64-byte line size
+***************************************************************************
+
+     | 1k		| 10k		 | 100k		  | 1kk 
+---------------------------------------------------------------------------
+sca  | 0.000026		| 0.000123	 | 0.001188	  | 0.011601
+vec  | 0.000013 (1.92)	| 0.000088 (1.40)| 0.000915 (1.30)| 0.009428 (1.23)
+
+
+***************************************************************************
+Name:		AMD FX 6300 (Vishera)
+Frequency:	3500 MHz
+Cores:		6
+Threads:	6
+Instr sets:	MMX(+), SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, SSE4A,
+		x86-64, AMD-V, AES, AVX, XOP, FMA3, FMA4
+
+L1 Data cache:	6 x 16 KBytes, 4-way set associative, 64-byte line size
+L1 Instr cache:	3 x 64 KBytes, 2-way set associative, 64-byte line size
+L2 cache:	3 x 2048 KBytes, 16-way set associative, 64-byte line size
+L3 cache:	8 MBytes, 64-way set associative, 64-byte line size
+***************************************************************************
+
+     | 10k		| 100k		 | 1kk		  | 10kk 
+---------------------------------------------------------------------------
+sca  | 0.000049		| 0.000352	 | 0.004258	  | 0.041951	  
+vec  | 0.000028 (1.75)	| 0.000258 (1.40)| 0.003802 (1.12)| 0.036203 (1.16)
+
+
+
+task2.c
+***************************************************************************
+Name:		Intel Atom N2600 (Cedarview)
+Frequency:	1600 MHz
+Cores:		2
+Threads:	4
+Instr sets:	MMX(+), SSE, SSE2, SSE3, SSSE3
+
+L1 Data cache:	2 x 24 KBytes, 6-way set associative, 64-byte line size
+L1 Instr cache:	2 x 32 KBytes, 8-way set associative, 64-byte line size
+L2 cache:	2 x 512 KBytes, 8-way set associative, 64-byte line size
+***************************************************************************
+
+     | 1k		| 10k		 | 100k		  | 1kk 
+---------------------------------------------------------------------------
+sca  | 0.000919		| 0.011764	 | 0.084294	  | 0.839708
+vec  | 0.000313 (2.94)	| 0.002965 (3.97)| 0.030932 (2.73)| 0.305914 (2.74)
+
+
+***************************************************************************
+Name:		AMD FX 6300 (Vishera)
+Frequency:	3500 MHz
+Cores:		6
+Threads:	6
+Instr sets:	MMX(+), SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, SSE4A,
+		x86-64, AMD-V, AES, AVX, XOP, FMA3, FMA4
+
+L1 Data cache:	6 x 16 KBytes, 4-way set associative, 64-byte line size
+L1 Instr cache:	3 x 64 KBytes, 2-way set associative, 64-byte line size
+L2 cache:	3 x 2048 KBytes, 16-way set associative, 64-byte line size
+L3 cache:	8 MBytes, 64-way set associative, 64-byte line size
+***************************************************************************
+
+     | 10k		| 100k		  | 1kk		     | 10kk 
+-------------------------------------------------------------------------------
+sca  | 0.009011		| 0.087012	  | 0.842132	     | 8.315121	  
+vec  | 0.001050 (8.56)	| 0.007181 (12.12)| 0.071312 (11.81) | 0.712053 (11.67)
+
