@@ -104,8 +104,8 @@ double run_scalar()
 	float *x = xmalloc(sizeof(*x) * n);
 	float *y = xmalloc(sizeof(*y) * n);
 	for (int i = 0; i < n; ++i) {
-		x[i] = 2.0;
-		y[i] = 3.0;
+		x[i] = 2.0f;
+		y[i] = 3.0f;
 	}
 
 	float res = sdot(x, y, n);
