@@ -26,12 +26,12 @@ int main(int argc, char **argv)
 	struct sockaddr_in serv_addr, clnt_addr;
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-		dumperr("socket");
+		dumperr("socket (server)");
 
 	optval = 1;
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const void *) &optval,
 		sizeof(int)) < 0)
-		dumperr("setsockopt");
+		dumperr("setsockopt (server)");
 	
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
@@ -39,14 +39,14 @@ int main(int argc, char **argv)
 	serv_addr.sin_port = 0;
 
 	if (bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-		dumperr("bind");
+		dumperr("bind (server)");
 
 	clnt_len = sizeof(clnt_addr);
 	serv_len = sizeof(serv_addr);
 
 	if (getsockname(sock, (struct sockaddr *) &serv_addr,
 		(socklen_t *) &serv_len) < 0)
-		dumperr("getsockname");
+		dumperr("getsockname (server)");
 
 	printf("\033[34mServer port:\033[0m %d\n", ntohs(serv_addr.sin_port));
 
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
 		if ((clnt_host = gethostbyaddr((const char *) &clnt_addr.sin_addr.s_addr,
 			sizeof(clnt_addr.sin_addr.s_addr), AF_INET)) == NULL)
-			dumperr("gethostbyaddr");
+			dumperr("gethostbyaddr (server)");
 
 		printf("\033[34m****************************************************\n");
 
