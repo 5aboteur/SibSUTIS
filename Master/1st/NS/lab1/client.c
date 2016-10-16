@@ -22,8 +22,8 @@ char *rand_str_gen(char *str, int size)
 {
 	int i;
 	const char charset[] = "abcdefghijklmnopqrstuvwxyz"
-							"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-							"0123456789,.?@#$%^&*()[]{}|";
+				"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+				"0123456789,.?@#$%^&*()[]{}|";
 
 	if (size--) {
 		for (i = 0; i < size; ++i) {
@@ -55,8 +55,7 @@ char *rand_str_alloc(int size)
 int main(int argc, char **argv)
 {
 	if (argc < 3) {
-		perror("arguments");
-		exit(1);
+		dumperr("arguments (client)");
 	}
 
 	srand((unsigned)time(NULL));
