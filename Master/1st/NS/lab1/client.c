@@ -34,7 +34,7 @@ char *rand_str_gen(char *str, int size)
 
 		return str;
 	}
-	else dumperr("rand_str_gen");
+	else dumperr("rand_str_gen (client)");
 
 	return str;
 }
@@ -47,7 +47,7 @@ char *rand_str_alloc(int size)
 		rand_str_gen(s, size);
 		return s;
 	}
-	else dumperr("rand_str_alloc");
+	else dumperr("rand_str_alloc (client)");
 
 	return s;
 }
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	port = atoi(argv[2]);
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-		dumperr("socket");
+		dumperr("socket (client)");
 
 	struct timeval timeout;
 	timeout.tv_sec = 3;
@@ -74,18 +74,18 @@ int main(int argc, char **argv)
 
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout,
 		sizeof(timeout)) < 0)
-		dumperr("setsockopt");
+		dumperr("setsockopt 1 (client)");
 
 	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *) &timeout,
 		sizeof(timeout)) < 0)
-		dumperr("setsockopt");
+		dumperr("setsockopt 2 (client)");
 
 	bzero((char *) &serv_addr, serv_len);
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(port);
 
 	if (!(inet_aton(argv[1], &serv_addr.sin_addr)))
-		dumperr("inet_aton");
+		dumperr("inet_aton (client)");
 
 	for (i = 0; i < NPACKS; ++i) {
 		int f = 0, l = 222;
