@@ -1,0 +1,25 @@
+#PBS -N virus
+#PBS -l nodes=2:ppn=3
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+
+id="3.jet.cluster.local"
+#id=$PBS_JOBID
+
+raw_m=$(echo $id | tr -dc '0-9')
+let "raw_n=2*raw_m"
+t0=${id#$raw_m"."}
+t1=${t0%%.*}
+raw_p=${#t1}
+
+echo "M -> "$raw_m
+echo "N -> "$raw_n
+echo "P -> "$raw_p
+
+echo $id
+cat $PBS_NODEFILE
+
+env
+
+./mm $raw_m $raw_n $raw_p
