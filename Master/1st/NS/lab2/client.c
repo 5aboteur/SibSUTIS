@@ -10,7 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define BUFSIZE 1024
+#define BUFSIZE 256
 
 void dumperr(char *str)
 {
@@ -20,20 +20,15 @@ void dumperr(char *str)
 
 int main(int argc, char **argv)
 {
-	if (argc < 4) {
-		perror("arguments (client)");
-		exit(1);
-	}
+	if (argc < 4)
+		dumperr("arguments (client)");
 
-	srand((unsigned)time(NULL));
-
-	int file_len, port, serv_len, sock;
+	int nbytes, port, serv_len, sock;
 	struct sockaddr_in serv_addr;
 
 	FILE *fp;
 
 	serv_len = sizeof(serv_addr);
-	file_len = 0;
 
 	port = atoi(argv[2]);
 
@@ -50,29 +45,45 @@ int main(int argc, char **argv)
 	if (connect(sock, (struct sockaddr *) &serv_addr, serv_len) < 0)
 		dumperr("connect (client)");
 
-	char *msg = malloc(sizeof(char) + BUFSIZE);
+	char ans[1];
 
-	if ((fp = fopen(argv[3], "rb")) == NULL)
+	if (recv(sock, ans, 1, 0) < 0)
+		dumperr("recv (client)");
+
+	printf("\033[33mConnected!\033[0m\n");
+
+	if (sendto(sock, argv[3], strlen(argv[3]), 0,
+		(struct sockaddr *) &serv_addr, serv_len) < 0)
+		dumperr("sendto (client)");
+
+	if (!(fp = fopen(argv[3], "rb")))
 		dumperr("fopen (client)");
 
-	fseek(fp, 0, SEEK_END);
+	while (1) {
+		char msg[BUFSIZE];
+		bzero(msg, BUFSIZE);
 
-	if ((file_len = ftell(fp)) < 0)
-		dumperr("ftell (client)");
+		if ((nbytes = fread(msg, sizeof(char), BUFSIZE, fp)) < 0)
+			dumperr("fread 1 (client)");
 
-	if (file_len > BUFSIZE)
-		dumperr("file_len (client)");
+		if (nbytes > 0) {
+			printf("\033[33mSending a message to the server,"
+				"size:\033[0m %3d\n", nbytes);
 
-	rewind(fp);
+			if (send(sock, msg, nbytes, 0) < 0)
+				dumperr("send (client)");
+		}
 
-	if (fread(msg, sizeof(char), file_len, fp) != file_len)
-		dumperr("fread (client)");
+		if (nbytes < BUFSIZE) {
+			if (feof(fp)) {
+				printf("\033[33m.. Done!\033[0m\n");
+				break;
+			}
 
-	printf("\033[33mSending message to server, size:\033[0m %3d\n\033[33m"
-		"Data:\033[0m %s\n\n", file_len, msg);
-
-	if (send(sock, msg, file_len, 0) < 0)
-		dumperr("send (client)");
+			if (ferror(fp))
+				dumperr("fread 2 (client)");
+		}
+	}
 
 	fclose(fp);
 	close(sock);
