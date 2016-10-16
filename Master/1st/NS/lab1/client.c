@@ -54,9 +54,8 @@ char *rand_str_alloc(int size)
 
 int main(int argc, char **argv)
 {
-	if (argc < 3) {
+	if (argc < 3)
 		dumperr("arguments (client)");
-	}
 
 	srand((unsigned)time(NULL));
 
