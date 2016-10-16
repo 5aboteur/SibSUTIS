@@ -12,7 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define BUFSIZE	1024
+#define BUFSIZE	256
 
 void killproc()
 {
@@ -28,16 +28,13 @@ void dumperr(char *str)
 
 int main(int argc, char **argv)
 {
-	char buf[BUFSIZE];
-	int clnt_len, serv_len, listener, optval, sock;
+	int clnt_len, serv_len, listener, nbytes, optval, sock;
 	struct hostent *clnt_host;
 	struct sockaddr_in serv_addr, clnt_addr;
 
 	FILE *fp;
 
 	pid_t p;
-
-	signal(SIGCHLD, killproc);
 
 	if ((listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 		dumperr("socket (server)");
@@ -67,8 +64,11 @@ int main(int argc, char **argv)
 	if (listen(listener, 5) < 0)
 		dumperr("listen (server)");
 
+	signal(SIGCHLD, killproc);
+
 	while (1) {
-		if ((sock = accept(listener, (struct sockaddr *) &clnt_addr, (socklen_t *) &clnt_len)) < 0)
+		if ((sock = accept(listener, (struct sockaddr *) &clnt_addr,
+			(socklen_t *) &clnt_len)) < 0)
 			dumperr("accept (server)");
 
 		if ((clnt_host = gethostbyaddr((const char *) &clnt_addr.sin_addr.s_addr,
@@ -86,14 +86,20 @@ int main(int argc, char **argv)
 			printf("Established connection with \033[0m%s \033[34m->\033[0m %s:%d\n",
 				clnt_host->h_name, inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
 
-			printf("\033[34mReading data..\033[0m\n");
+			char ans[BUFSIZE], buf[BUFSIZE];
 
+			bzero(ans, BUFSIZE);
 			bzero(buf, BUFSIZE);
 
-			if (recv(sock, buf, BUFSIZE, 0) < 0)
-				dumperr("recv (server)");
+			if (send(sock, "K", 1, 0) < 0)
+				dumperr("send (server)");
 
-			int buflen = strlen(buf);
+			if ((nbytes = recv(sock, ans, BUFSIZE, 0)) < 0)
+				dumperr("recv 1 (server)");
+
+			printf("\033[34mBytes received\033[0m %d\n"
+				"\033[34mFilename:\033[0m %s\n", nbytes, ans);
+			printf("\033[34mReading data..\033[0m\n");
 
 			char *prefix = malloc(sizeof(char) + 6);
 			char *hostname = malloc(sizeof(char) + 32);
@@ -105,11 +111,18 @@ int main(int argc, char **argv)
 			memcpy(filename, prefix, strlen(prefix));
 			memcpy(filename + strlen(prefix), hostname, strlen(hostname) + 1);
 
-			if ((fp = fopen(filename, "ab")) == NULL)
+			if (!(fp = fopen(filename, "ab")))
 				dumperr("fopen (server)");
 
-			if (fwrite(buf, sizeof(char), buflen, fp) <= 0)
-				dumperr("fwrite (server)");
+			while ((nbytes = recv(sock, buf, BUFSIZE, 0)) > 0) {
+				printf("\033[34mBytes received\033[0m %d\n", nbytes);
+
+				if (fwrite(buf, sizeof(char), nbytes, fp) < 0)
+					dumperr("fwrite (server)");
+			}
+
+			if (nbytes < 0)
+				dumperr("recv 2 (server)");
 
 			printf("\033[32mComplete!\n\033[34mData stored in \033[0mclnt_%s",
 				clnt_host->h_name);
