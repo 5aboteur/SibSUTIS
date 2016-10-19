@@ -104,7 +104,7 @@ float sdot_avx(float *x, float *y, int n)
 	s = _mm256_hadd_ps(s, s);				// [s3 + s2, ..]
 	s = _mm256_hadd_ps(s, s);				// [s3 + s2 + s1 + s0, ..]
 
-	tmp1 = _mm256_permute2f128_ps(s, s, 1);	// permute low & high bits
+	tmp1 = _mm256_permute2f128_ps(s, s, 1);			// permute low & high bits
 
 	s = _mm256_add_ps(s, tmp1);				// final sum
 
