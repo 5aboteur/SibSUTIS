@@ -40,7 +40,7 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 
 #define REP 20
 
-enum { n = 1000003 };
+enum { n = 100003 };
 
 float sdot(float *x, float *y, int n)
 {
@@ -81,6 +81,44 @@ float sdot_sse(float *x, float *y, int n)
 	return res;
 }
 
+float sdot_avx(float *x, float *y, int n)
+{
+	__declspec(align(32)) float res = 0;
+
+	__m256 *xx = (__m256 *)x;
+	__m256 *yy = (__m256 *)y;
+
+	// init vecs w/ zeroes
+	__m256 s = _mm256_setzero_ps();
+	__m256 tmp1 = _mm256_setzero_ps();
+
+	// float -> 32bit
+	int k = n / 8;
+
+	// mul & sum
+	for (int i = 0; i < k; ++i) {
+		tmp1 = _mm256_mul_ps(xx[i], yy[i]);
+		s = _mm256_add_ps(tmp1, s);
+	}
+
+	s = _mm256_hadd_ps(s, s);				// [s3 + s2, ..]
+	s = _mm256_hadd_ps(s, s);				// [s3 + s2 + s1 + s0, ..]
+
+	tmp1 = _mm256_permute2f128_ps(s, s, 1);	// permute low & high bits
+
+	s = _mm256_add_ps(s, tmp1);				// final sum
+
+	__declspec(align(32)) float tmp2[8];
+	_mm256_store_ps(tmp2, s);
+
+	res = tmp2[0];
+
+	for (int i = k * 8; i < n; ++i)
+		res += x[i] * y[i];
+
+	return res;
+}
+
 
 void *xmalloc(size_t size)
 {
@@ -104,8 +142,8 @@ double run_scalar()
 	float *x = xmalloc(sizeof(*x) * n);
 	float *y = xmalloc(sizeof(*y) * n);
 	for (int i = 0; i < n; ++i) {
-		x[i] = 2.0f;
-		y[i] = 3.0f;
+		x[i] = 2.0;
+		y[i] = 3.0;
 	}
 
 	float res = sdot(x, y, n);
@@ -132,11 +170,11 @@ double run_vectorized()
 		y[i] = 3.0f;
 	}
 
-	float res = sdot_sse(x, y, n);
+	float res = sdot_avx(x, y, n);
 
 	double t = wtime();
 	for (int i = 0; i < REP; ++i)
-		res = sdot_sse(x, y, n);
+		res = sdot_avx(x, y, n);
 	t = wtime() - t;
 
 	float valid_result = 2.0f * 3.0f * n;
