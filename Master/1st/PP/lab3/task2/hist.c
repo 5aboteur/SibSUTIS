@@ -67,6 +67,8 @@ void hist_omp(uint8_t *pixels, uint64_t height, uint64_t width)
 		for (uint64_t i = 0; i < 256; i++) {
 			h[i] += h_loc[i];
 		}
+	
+		free(h_loc);
 	}
 
 	uint64_t mini, maxi;
