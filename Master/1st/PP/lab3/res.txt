@@ -43,4 +43,4 @@ n = 65536 x 65536
 
 ===========================================
 
-P.s.: do "./results" for a table-oriented view
+Do "./results" for a table-oriented view.
