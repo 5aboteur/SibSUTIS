@@ -7,8 +7,8 @@
 #include <limits.h>
 #include <omp.h>
 
-const uint64_t width = 64 * 1024;
-const uint64_t height = 64 * 1024;
+const uint64_t width = 32 * 1024;
+const uint64_t height = 32 * 1024;
 
 void *xmalloc(size_t size)
 {
@@ -67,7 +67,7 @@ void hist_omp(uint8_t *pixels, uint64_t height, uint64_t width)
 		for (uint64_t i = 0; i < 256; i++) {
 			h[i] += h_loc[i];
 		}
-	
+
 		free(h_loc);
 	}
 
@@ -117,10 +117,12 @@ int main(int argc, char *argv[])
 
 	for (uint64_t i = 0; i < npixels; i++) {
 		if (pixels1[i] != pixels2[i]) {
-			printf("Verification failed: %" PRIu64 " %d %d \n", i, pixels1[i], pixels2[i]);
+			printf("Verification failed: %" PRIu64 " %d %d \n",
+				i, pixels1[i], pixels2[i]);
 			break;
 		}
 	}
+
 	free(pixels1);
 	free(pixels2);
 
