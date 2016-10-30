@@ -4,11 +4,6 @@
 #include <omp.h>
 #include <sys/time.h>
 
-#include <emmintrin.h>
-#include <immintrin.h>
-#include <xmmintrin.h>
-#include <pmmintrin.h>
-
 /*
 * Memory consumption: O(m * n + n + m)
 */
@@ -57,32 +52,6 @@ void dgemv_omp(double *a, double *b, double *c, int m, int n)
 	}
 }
 
-void dgemv_omp_vec(double *a, double *b, double *c, int m, int n)
-{
-	__m128d *aa = (__m128d *)a;
-	__m128d *bb = (__m128d *)b;
-	__m128d *cc = (__m128d *)c;
-
-	int k = m / 2;
-
-	#pragma omp parallel for
-	for (int i = 0; i < k; i++) {
-		cc[i] = _mm_setzero_pd();
-		for (int j = 0; j < n; j++) {
-			__m128d tmp = _mm_setzero_pd();
-			tmp = _mm_mul_pd(aa[i * n + j], bb[j]);
-			cc[i] = _mm_add_pd(tmp, cc[i]);
-		}
-	}
-
-	#pragma omp parallel for
-	for (int i = k * 2; i < m; i++) {
-		c[i] = 0.0;
-		for (int j = 0; j < n; j++)
-			c[i] += a[i * n + j] * b[j];
-	}
-}
-
 double run_serial()
 {
 	double *a, *b, *c;
@@ -122,16 +91,19 @@ double run_parallel()
 	b = xmalloc(sizeof(*b) * n);
 	c = xmalloc(sizeof(*c) * m);
 
-	#pragma omp parallel for
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
-			a[i * n + j] = i + j;
+	#pragma omp parallel
+	{
+		#pragma omp for
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				a[i * n + j] = i + j;
+			}
 		}
-	}
 
-	#pragma omp for
-	for (int j = 0; j < n; j++)
-		b[j] = j;
+		#pragma omp for
+		for (int j = 0; j < n; j++)
+			b[j] = j;
+	}
 
 	double t = wtime();
 	dgemv_omp(a, b, c, m, n);
@@ -146,50 +118,17 @@ double run_parallel()
 	return t;
 }
 
-double run_parallel_vec()
-{
-	double *a, *b, *c;
-
-	// Allocate memory for 2-d array a[m, n]
-	a = _mm_malloc(sizeof(*a) * m * n, 16);
-	b = _mm_malloc(sizeof(*b) * n, 16);
-	c = _mm_malloc(sizeof(*c) * m, 16);
-
-	#pragma omp parallel for
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
-			a[i * n + j] = i + j;
-		}
-	}
-
-	#pragma omp for
-	for (int j = 0; j < n; j++)
-		b[j] = j;
-
-	double t = wtime();
-	dgemv_omp_vec(a, b, c, m, n);
-	t = wtime() - t;
-
-	printf("Elapsed time (parallel): %.6f sec.\n", t);
-
-	_mm_free(a);
-	_mm_free(b);
-	_mm_free(c);
-
-	return t;
-}
-
 int main(int argc, char **argv)
 {
-	printf("DGEMV: general matrix-vector multiplication\n (c[m] = a[m, n] * b[n]; m = %d, n = %d)\n", m, n);
-	printf("Memory used: %" PRIu64 " MiB\n", (uint64_t)(((double)m * n + m + n) * sizeof(double)) >> 20);
+	printf("DGEMV: general matrix-vector multiplication\n"
+		"(c[m] = a[m, n] * b[n]; m = %d, n = %d)\n", m, n);
+	printf("Memory used: %" PRIu64 " MiB\n",
+		(uint64_t)(((double)m * n + m + n) * sizeof(double)) >> 20);
 
 	double tser = run_serial();
 	double tpar = run_parallel();
-	double tvec = run_parallel_vec();
 
 	printf("Speedup: %.2f\n", tser / tpar);
-	printf("Speedup: %.2f\n", tser / tvec);
 
 	return 0;
 }
