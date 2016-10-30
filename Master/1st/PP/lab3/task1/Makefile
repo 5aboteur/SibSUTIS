@@ -2,7 +2,7 @@ prog := dgemv
 prog_objs := dgemv.o
 
 CC := gcc
-CFLAGS := -std=c99 -g -Wall -O2 -fopenmp -mmmx -mfpmath=sse -msse -msse2 -msse3
+CFLAGS := -std=c99 -g -Wall -O2 -fopenmp
 LDFLAGS := -fopenmp
 
 .PHONY: all clean
