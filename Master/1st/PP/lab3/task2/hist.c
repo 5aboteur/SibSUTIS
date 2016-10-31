@@ -59,14 +59,12 @@ void hist_omp(uint8_t *pixels, uint64_t height, uint64_t width)
 		uint64_t *h_loc = xmalloc(sizeof(*h_loc) * 256);
 
 		#pragma omp for
-		for (uint64_t i = 0; i < npixels; i++) {
+		for (uint64_t i = 0; i < npixels; i++)
 			h_loc[pixels[i]]++;
-		}
 
 		#pragma omp critical
-		for (uint64_t i = 0; i < 256; i++) {
+		for (uint64_t i = 0; i < 256; i++)
 			h[i] += h_loc[i];
-		}
 
 		free(h_loc);
 	}
