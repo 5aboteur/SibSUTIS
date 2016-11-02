@@ -47,39 +47,26 @@ void hist_omp(uint8_t *pixels, uint64_t height, uint64_t width)
 {
 	uint64_t npixels = height * width;
 
-	// Number of each pixel occurrence in the image
-	uint64_t *h = xmalloc(sizeof(*h) * 256);
-
 	#pragma omp parallel
 	{
-		#pragma omp for
-		for (uint64_t i = 0; i < 256; i++)
-			h[i] = 0;
-
 		uint64_t *h_loc = xmalloc(sizeof(*h_loc) * 256);
 
 		#pragma omp for
 		for (uint64_t i = 0; i < npixels; i++)
 			h_loc[pixels[i]]++;
 
-		#pragma omp critical
-		for (uint64_t i = 0; i < 256; i++)
-			h[i] += h_loc[i];
+		uint64_t mini_loc, maxi_loc;
+		for (mini_loc = 0; mini_loc < 256 && h_loc[mini_loc] == 0; mini_loc++);
+		for (maxi_loc = 255; maxi_loc >= 0 && h_loc[maxi_loc] == 0; maxi_loc--);
+
+		uint64_t q = 255 / (maxi_loc - mini_loc);
+
+		#pragma omp for
+		for (uint64_t i = 0; i < npixels; i++)
+			pixels[i] = (pixels[i] - mini_loc) * q;
 
 		free(h_loc);
 	}
-
-	uint64_t mini, maxi;
-	for (mini = 0; mini < 256 && h[mini] == 0; mini++);
-	for (maxi = 255; maxi >= 0 && h[maxi] == 0; maxi--);
-
-	uint64_t q = 255 / (maxi - mini);
-
-	#pragma omp parallel for
-	for (uint64_t i = 0; i < npixels; i++)
-		pixels[i] = (pixels[i] - mini) * q;
-
-	free(h);
 }
 
 int main(int argc, char *argv[])
