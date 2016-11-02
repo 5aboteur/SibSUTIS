@@ -11,11 +11,13 @@
 #include <time.h>
 #include <unistd.h>
 
-#define BUFSIZE 10000
+#define BUFSIZE 1024
 #define NPACKS	100
 
 #define MSG_STREAM 0
 #define PPM_STREAM 1
+
+#define MAX_STREAMS 32
 
 void dumperr(char *str)
 {
@@ -25,25 +27,20 @@ void dumperr(char *str)
 
 int main(int argc, char **argv)
 {
-	if (argc < 5) {
-		perror("arguments (client)");
-		exit(1);
-	}
+	if (argc < 5)
+		dumperr("arguments (client)");
 
-	srand((unsigned)time(NULL));
-
-	int i, file_len, port, serv_len, sock;
-	struct sockaddr_in serv_addr;
-
-	FILE *fp;
-
-	serv_len = sizeof(serv_addr);
-	file_len = 0;
+	int nbytes, port, sock;
 
 	port = atoi(argv[2]);
 
+	/* Create a one2one SCTP socket */
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP)) < 0)
 		dumperr("socket (client)");
+
+	/* Initialize server address */
+	struct sockaddr_in serv_addr;
+	int serv_len = sizeof(serv_addr);
 
 	bzero((char *) &serv_addr, serv_len);
 	serv_addr.sin_family = AF_INET;
@@ -52,66 +49,115 @@ int main(int argc, char **argv)
 	if (!(inet_aton(argv[1], &serv_addr.sin_addr)))
 		dumperr("inet_aton (client)");
 
+	/* Enable association flags to get info from sctp_sndrcvinfo */
+	struct sctp_event_subscribe events;
+
+	memset((void *) &events, 0, sizeof(events));
+	events.sctp_association_event = 1;
+	events.sctp_data_io_event = 1;
+
+	if (setsockopt(sock, SOL_SCTP, SCTP_EVENTS, &events, sizeof(events)) < 0)
+		dumperr("setsockopt 1 (client)");
+
+	/* Initialize msg stream parameters */
+	struct sctp_initmsg initmsg;
+
+	memset((void *) &initmsg, 0, sizeof(initmsg));
+	initmsg.sinit_num_ostreams = MAX_STREAMS;
+	initmsg.sinit_max_instreams = MAX_STREAMS;
+	initmsg.sinit_max_attempts = MAX_STREAMS;
+
+	if (setsockopt(sock, SOL_SCTP, SCTP_INITMSG, &initmsg, sizeof(initmsg)) < 0)
+		dumperr("setsockopt 2 (client)");
+
+	/* Try to connect to the server */
 	if (connect(sock, (struct sockaddr *) &serv_addr, serv_len) < 0)
 		dumperr("connect (client)");
 
+	printf("\033[33mConnected!\033[0m\n");
 
-	for (i = 0; i < NPACKS; ++i) {
-		char *msg = malloc(sizeof(char) + BUFSIZE);
+	while (1) {
+		int choice;
 
-		if ((fp = fopen(argv[3], "rb")) == NULL)
-			dumperr("fopen 1 (client)");
+		printf("\033[1;37m1. Send a handshake message to the server\n");
+		printf("2. Send a file to the server\n");
+		printf("3. Quit\n");
+		printf(">\033[0m");
+		scanf("%d", &choice);
 
-		fseek(fp, 0, SEEK_END);
+		FILE *fp;
 
-		if ((file_len = ftell(fp)) < 0)
-			dumperr("ftell 1 (client)");
+		switch (choice) {
+		case 1:
+			if (!(fp = fopen(argv[3], "rb")))
+				dumperr("fopen 1 (client)");
 
-		if (file_len > BUFSIZE)
-			dumperr("file_len 1 (client)");
+			printf("\033[33mSending a handshake message to the server.\033[0m\n");
 
-		rewind(fp);
+			while (1) {
+				char *msg = malloc(sizeof(char) + BUFSIZE);
 
-		if (fread(msg, sizeof(char), file_len, fp) != file_len)
-			dumperr("fread 1 (client)");
+				if ((nbytes = fread(msg, sizeof(char), BUFSIZE, fp)) < 0)
+					dumperr("fread 1 (client)");
 
-		printf("\033[33mSending message\033[0m %3d \033[33mto server,"
-				"size:\033[0m %3d\n\033[33mData:\033[0m %s\n\n", i + 1, file_len, msg);
+				if (nbytes > 0) {
+					if (sctp_sendmsg(sock, msg, nbytes, NULL, 0, 0, 0,
+						MSG_STREAM, 0, 0) < 0)
+						dumperr("sctp_sendmsg 1 (client)");
+				}
 
-		if (sctp_sendmsg(sock, msg, file_len + 1, NULL, 0, 0, 0, MSG_STREAM, 0, 0) < 0)
-			dumperr("sctp_sendmsg 1 (client)");
+				if (nbytes < BUFSIZE) {
+					if (feof(fp)) {
+						printf("\033[33m.. Done!\033[0m\n");
+						break;
+					}
 
-		fclose(fp);
+					if (ferror(fp))
+						dumperr("fread 2 (client)");
+				}
+			}
 
-		char *pic = malloc(sizeof(char) + BUFSIZE);
+			fclose(fp);
+			break;
+		case 2:
+			if (!(fp = fopen(argv[4], "rb")))
+				dumperr("fopen 2 (client)");
 
-		if ((fp = fopen(argv[4], "rb")) == NULL)
-			dumperr("fopen 2 (client)");
+			printf("\033[33mSending a picture to the server.\033[0m\n");
 
-		fseek(fp, 0, SEEK_END);
+			while (1) {
+				char *pic = malloc(sizeof(char) + BUFSIZE);
 
-		if ((file_len = ftell(fp)) < 0)
-			dumperr("ftell 2 (client)");
+				if ((nbytes = fread(pic, sizeof(char), BUFSIZE, fp)) < 0)
+					dumperr("fread 2 (client)");
 
-		if (file_len > BUFSIZE)
-			dumperr("file_len 2 (client)");
+				if (nbytes > 0) {
+					if (sctp_sendmsg(sock, pic, nbytes, NULL, 0, 0, 0,
+						PPM_STREAM, 0, 0) < 0)
+						dumperr("sctp_sendmsg 2 (client)");
+				}
 
-		rewind(fp);
+				if (nbytes < BUFSIZE) {
+					if (feof(fp)) {
+						printf("\033[33m.. Done!\033[0m\n");
+						break;
+					}
 
-		if (fread(pic, sizeof(char), file_len, fp) != file_len)
-			dumperr("fread 2 (client)");
+					if (ferror(fp))
+						dumperr("fread 2 (client)");
+				}
+			}
 
-		printf("\033[33mSending picture to server, size:\033[0m %3d\n", file_len);
-
-		if (sctp_sendmsg(sock, pic, file_len + 1, NULL, 0, 0, 0, PPM_STREAM, 0, 0) < 0)
-			dumperr("sctp_sendmsg 2 (client)");
-
-		fclose(fp);
-
-		sleep(3);
+			fclose(fp);
+			break;
+		case 3:
+			close(sock);
+			exit(0);
+		default:
+			printf("Incorrect value! :(\n");
+			break;
+		}
 	}
-
-	close(sock);
 
 	return 0;
 }
