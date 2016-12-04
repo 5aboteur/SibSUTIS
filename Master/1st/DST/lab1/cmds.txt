@@ -1,0 +1,5 @@
+env | grep -E “PBS_*”
+
+cat $PBS_NODEFILE
+
+mount -l
