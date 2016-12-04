@@ -1,5 +1,5 @@
 all:
-	gcc -std=c99 -Wall prog.c -o prog -lpthread
+	gcc -Wall prog.c -o prog -lpthread -lrt
 
 clean:
 	rm -f prog
