@@ -1,23 +1,130 @@
+#include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
-int timeThink;
-int timeRestart;
+int timeThink = 2;
+int timeRestart = 2;
 
-int cnt;
-int turn;
-int winner;
+int cnt, turn, winner, start = 1, think = 1;
+int quit = 0;
+int custom_pause = 0;
 
 int field[9];
 int trine[3];
 int st[2];
 
+int go = 0;
+
+timer_t timer_think, timer_restart;
+
+timer_t create_timer(int signo)
+{
+    timer_t timerid;
+    struct sigevent se;
+    se.sigev_notify = SIGEV_SIGNAL;
+    se.sigev_signo = signo;
+    timer_create(CLOCK_REALTIME, &se, &timerid);
+    return timerid;
+}
+
+void set_timer(timer_t timerid, int secs)
+{
+    struct itimerspec timervals;
+    timervals.it_value.tv_sec = secs;
+    timervals.it_value.tv_nsec = 0;
+    timervals.it_interval.tv_sec = 0;
+    timervals.it_interval.tv_nsec = 0;
+    timer_settime(timerid, 0, &timervals, NULL);
+}
+
+void install_sighandler(int signo, void(*handler)(int))
+{
+    sigset_t set;
+    struct sigaction act;
+
+    act.sa_handler = handler;
+    act.sa_flags = SA_RESTART;
+    sigaction(signo, &act, 0);
+
+    sigemptyset(&set);
+    sigaddset(&set, signo);
+    sigprocmask(SIG_UNBLOCK, &set, NULL);
+}
+
+enum keys {
+    _S, _T, _A, _Q, _UNKNOWN
+};
+
+struct termios rk_currentTermState;
+
+int mytermsave()
+{
+    if (tcgetattr(1, &rk_currentTermState) == -1) return -1;
+    return 0;
+}
+
+int mytermrestore()
+{
+    if (tcsetattr(1, TCSANOW, &rk_currentTermState) == -1) return -1;
+    return 0;
+}
+
+int mytermregime(int regime, int vtime, int vmin, int echo, int sigint)
+{
+    struct termios term;
+
+    if ((regime > 1) || (regime < 0) || (echo > 1) ||
+        (echo < 0) || (sigint > 1) || (sigint < 0))
+        return 1;
+
+    if ((vtime < 0) || (vmin < 0)) return -1;
+    if (tcgetattr(1, &term) == -1) return -1;
+
+    if (regime == 0) term.c_lflag &= (~ICANON);
+    else term.c_lflag |= ICANON;
+
+    if (echo == 0) term.c_lflag &= (~ECHO);
+    else term.c_lflag |= ECHO;
+
+    if (sigint == 0) term.c_lflag &= (~ISIG);
+    else term.c_lflag |= ISIG;
+
+    term.c_cc[VMIN] = vmin;
+    term.c_cc[VTIME] = vtime;
+
+    if (tcsetattr(1, TCSANOW, &term) == -1) return -1;
+
+    return 0;
+}
+
+int readkey(enum keys *key)
+{
+    char ch;
+    if (!read(0, &ch, 1)) return -1;
+    *key = ch;
+    switch (ch) {
+        case 's': *key = _S; break;
+        case 't': *key = _T; break;
+        case 'a': *key = _A; break;
+        case 'q': *key = _Q; break;
+        default: *key = _UNKNOWN; break;
+    }
+    return 0;
+}
+
 void dump(int line)
 {
+	int i;
+
 	if (line) {
 		if (turn)
 			winner = 1;
@@ -73,7 +180,7 @@ void dump(int line)
 
 	printf("\n\033[1;34m*\033[1;35m*\033[1;36m*\033[1;35m*\033[1;34m*\033[0m");
 	printf(" turn: %d\n", cnt + 1);
-	for (int i = 0; i < 9; ++i) {
+	for (i = 0; i < 9; ++i) {
 		if (i == trine[0] || i == trine[1] || i == trine[2])
 			printf("\033[1;31m");
 		if (field[i] != -1) {
@@ -213,11 +320,52 @@ void check(int c, int idx)
 
 void cmd()
 {
-	
+    mytermsave();
+	int key;
+    mytermregime(0, 0, 1, 0, 1);
+    while (!quit) {
+        readkey((enum keys *) &key);
+        switch (key) {
+            case _A:
+                custom_pause = 1;
+                printf("Input a new restart time.\n");
+                while (!scanf("%d", &timeRestart));                
+                printf("Restart time is now %d secs.\n", timeRestart);
+                custom_pause = 0;
+                break;
+            case _S:
+                if (custom_pause) {
+                    printf("The game is going to proceed.\n");
+                    custom_pause = 0;
+                } else {
+                    printf("The game is going to pause.\n");
+                    custom_pause = 1;
+                }
+                break;
+            case _T:
+                custom_pause = 1;
+                printf("Input a new think time.\n");
+                while (!scanf("%d", &timeThink));
+                printf("Think time is now %d secs.\n", timeThink);
+                custom_pause = 0;
+                break;
+            case _Q:
+                printf("Attempting to quit the game.\n");
+                if (custom_pause)
+                    custom_pause = 0;
+                quit = 1;
+                break;
+            default:
+                break;
+        }
+    }
+    sleep(timeThink);
+    mytermrestore();
 }
 
 void game()
 {
+    printf("The game has begun.\n");
 	int idx;
 
 	memset(trine, -1, sizeof(int) * 3);
@@ -226,15 +374,17 @@ void game()
 	turn = 1;
 	cnt = 0;
 	winner = -1;
-/*
-	for (int i = 0; i < 9; ++i)
-		printf("%d ", field[i]);
-	printf("\n");
-	for (int i = 0; i < 3; ++i)
-		printf("%d ", trine[i]);
-*/
+
 	while (1) {
-//		printf("\nturn=%d, cnt=%d, winner=%d\n\n", turn, cnt, winner);
+        set_timer(timer_think, timeThink);
+		while (think);
+        think = 1;
+        
+        while (custom_pause);
+        
+        if (quit)
+            break;
+        
 		do {
 			idx = rand() % 9;
 		} while (field[idx] != -1);
@@ -269,26 +419,44 @@ void game()
 			printf("\033[1;32mResult: draw.\033[0m\n");
 			break;
 		}
-
-		usleep(70000);
+//		usleep(70000);
 	}
+}
+
+void signal_handler(int signo)
+{
+	if (signo == SIGUSR1) 
+        think = 0;
+    else if (signo == SIGUSR2)
+        start = 0;
 }
 
 int main()
 {
-	srand((unsigned)time(NULL));
-//	pthread_create(&gamethr, , NULL, game);
-//	pthread_create(&cmdthr, , NULL, cmd);
+//	srand((unsigned)time(NULL));
+	timer_think = create_timer(SIGUSR1);
+    timer_restart = create_timer(SIGUSR2);
 
-//	pthread_join(gamethr, 0);
-//	pthread_join(cmdthr, 0);
+    install_sighandler(SIGUSR1, signal_handler);
+    install_sighandler(SIGUSR2, signal_handler);
+
+	pthread_t cmdthr;
+
+//	pthread_create(&gamethr, NULL, (void *)game, NULL);
+	pthread_create(&cmdthr, NULL, (void *)cmd, NULL);
+
 	while (1) {
-		game();
-		if (st[0] == 9 || st[1] == 9) {
+        if (st[0] == 9 || st[1] == 9 || quit) {
 			printf("\nFin.\n");
 			break;
 		}
+		game();
+        set_timer(timer_restart, timeRestart);
+        while (start);
+        start = 1;
 	}
 
+//	pthread_join(gamethr, NULL);
+	pthread_join(cmdthr, NULL);
 	return 0;
 }
