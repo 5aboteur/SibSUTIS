@@ -1,0 +1,7 @@
+#PBS -N virus
+#PBS -l nodes=2:ppn=3
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+
+./mm 2 2 2
