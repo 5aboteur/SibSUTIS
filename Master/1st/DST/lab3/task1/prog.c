@@ -1,19 +1,73 @@
-#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
 int N, K, T;
 int *rooms, *customers;
+
+int work = 1;
+
 pthread_t *thr;
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+
+timer_t work_timer;
+
+timer_t create_timer(int signo)
+{
+    timer_t timerid;
+    struct sigevent se;
+    se.sigev_notify = SIGEV_SIGNAL;
+    se.sigev_signo = signo;
+    timer_create(CLOCK_REALTIME, &se, &timerid);
+    return timerid;
+}
+
+void set_timer(timer_t timerid, int secs)
+{
+    struct itimerspec timervals;
+    timervals.it_value.tv_sec = secs;
+    timervals.it_value.tv_nsec = 0;
+    timervals.it_interval.tv_sec = 0;
+    timervals.it_interval.tv_nsec = 0;
+    timer_settime(timerid, 0, &timervals, NULL);
+}
+
+void install_sighandler(int signo, void(*handler)(int))
+{
+    sigset_t set;
+    struct sigaction act;
+
+    act.sa_handler = handler;
+    act.sa_flags = SA_RESTART;
+    sigaction(signo, &act, 0);
+
+    sigemptyset(&set);
+    sigaddset(&set, signo);
+    sigprocmask(SIG_UNBLOCK, &set, NULL);
+}
+
+
+void signal_handler(int signo)
+{
+	if (signo == SIGUSR1)
+        work = 0;
+}
 
 void *customers_routine(void *idx_ptr)
 {
     int cust_idx = *((int *) idx_ptr);
     printf("Privet, ja cust %d!\n", cust_idx);
+    
+    int attempts = N;
     
     while (1 < 2) {
         pthread_mutex_lock(&mut);
@@ -32,12 +86,17 @@ void *customers_routine(void *idx_ptr)
             }
             
             pthread_mutex_unlock(&mut);
+            attempts = N;
             sleep(5);
         }
-        else
+        else {
             pthread_mutex_unlock(&mut);
+            --attempts;
+        }
         
-        if (!customers[cust_idx]) {
+
+        
+        if (!customers[cust_idx] || !attempts) {
             printf("YA OFF.\n");
             break;
         }
@@ -50,7 +109,7 @@ void *bulldozer_routine()
 {
     printf("Privet, ja dozer!\n");
     
-    while (1 < 2) {
+    while (work) {
         for (int i = 0; i < N; ++i) {
             if (!rooms[i]) {
                 printf("I`ll fill that hujna w/ 40 shit %d!\n", i);
@@ -58,7 +117,7 @@ void *bulldozer_routine()
                 rooms[i] = 40;
                 pthread_mutex_unlock(&mut);
                 
-                
+               
                 printf("Rooms state:\n");
                 for (int i = 0; i < N; ++i) {
                     if (!(i % 10) && i)
@@ -77,6 +136,7 @@ void *bulldozer_routine()
         }
 
     }
+    printf("\033[1;31mPORA DOMOJ!!!\033[0m\n");
     
     return NULL;
 }
@@ -111,6 +171,10 @@ int main(int argc, char *argv[])
         printf("Error while allocating memory.\n");
         exit(2);
     }
+    
+    work_timer = create_timer(SIGUSR1);
+    install_sighandler(SIGUSR1, signal_handler);
+    set_timer(work_timer, T);
     
     printf("Initial rooms state:\n");
     for (int i = 0; i < N; ++i) {
