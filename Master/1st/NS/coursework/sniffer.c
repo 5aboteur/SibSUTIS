@@ -1,8 +1,3 @@
-/************** sniffer.c **************/
-/***************************************/
-/*** gcc -lpcap sniffer.c -o sniffer ***/
-/***************************************/
-
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
