@@ -1,3 +1,6 @@
+// ./prog &
+// ps aux | grep [id]
+
 #include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
