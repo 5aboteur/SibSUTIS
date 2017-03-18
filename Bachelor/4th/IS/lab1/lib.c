@@ -200,32 +200,3 @@ long long bstep_gstep(long long a, long long p, long long y)
 
 	return -1;
 }
-
-
- /**************************
- *     		           *
- * >> LAB 2 STARTS HERE << *
- *	                   *
- **************************/
-
-
- /*******************
- * Vernam algorithm *
- *******************/
-
-
-char onetime_pad(char msg, char key)
-{
-	return msg ^ key;
-}
-
-
- /****************
- * RSA algorithm *
- ****************/
-
-
-long long rsa()
-{
-	return 0;
-}
