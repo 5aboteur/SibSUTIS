@@ -1,0 +1,24 @@
+#! /usr/bin/gnuplot -persist
+
+set terminal postscript eps enhanced
+set output "~/Desktop/graph2.ps"
+
+set xlabel "t" font "Courier New, 16"
+set ylabel "U*(t)" font "Courier New, 16"
+
+set title "N = 16, lambda = 0.024 hours^{-1}, u = 0.71 hours^{-1}, m = 1" font "Courier New, 16"
+
+set xrange [0.01:18]
+set xtics 0.01,4,18
+
+#set format y "10^{%g}"
+set yrange [0.98:1.00]
+set ytics(0.98, 0.984, 0.988, 0.992, 0.996, 1.00)
+set logscale y
+
+set style line 1 lt 1 pt 7
+#set key left top
+
+plot "~/Desktop/0" using 1:2 title "n = 10" with linespoints linestyle 1, \
+     "~/Desktop/01" using 1:2 title "n = 13" with linespoints linestyle 2, \
+     "~/Desktop/012" using 1:2 title "n = 16" with linespoints linestyle 3, \
