@@ -1,1 +1,1 @@
-# Parallel Computer Technologies
+# Parallel Computing Technologies
