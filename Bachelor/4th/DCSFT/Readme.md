@@ -1,1 +1,1 @@
-# Theory of Distributed Computer Systems Functioning Organization
+## Theory of Distributed Computer Systems Functioning Organization
