@@ -1,0 +1,26 @@
+#! /usr/bin/gnuplot -persist
+
+set terminal postscript eps enhanced
+set output "~/Documents/TDCS/graph6.ps"
+
+set xlabel "Number n of elementary machines in base subsystem" font "Courier New, 16"
+set ylabel "Mean time to recovery (hours)" font "Courier New, 16"
+
+set title "Mean time to recovery (N = 8192, lambda = 10^{-5} hours^{-1}, u = 1 hours^{-1})" font "Courier New, 16"
+
+set xrange [8090:8200]
+set xtics 8090,10,8200 
+
+#set format y "10^{%L}"
+set yrange [0.20:1.60]
+set ytics(0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60)
+set logscale y
+
+set style line 1 lt 1 pt 7
+set key left top
+
+plot "~/Documents/TDCS/0" using 1:2 title "m = 1" with linespoints linestyle 1, \
+     "~/Documents/TDCS/01" using 1:2 title "m = 2" with linespoints linestyle 2, \
+     "~/Documents/TDCS/012" using 1:2 title "m = 3" with linespoints linestyle 3, \
+     "~/Documents/TDCS/0123" using 1:2 title "m = 4" with linespoints linestyle 4, \
+#     "~/Documents/TDCS/01234" using 1:2 title "lambda = 10^{-9}" with linespoints linestyle 5, \
