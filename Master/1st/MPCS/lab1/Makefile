@@ -1,2 +1,2 @@
 all:
-  gcc prog.c && ./a.out
+	gcc prog.c && ./a.out
