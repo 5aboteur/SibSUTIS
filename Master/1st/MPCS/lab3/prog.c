@@ -123,7 +123,6 @@ int main(int argc, char *argv[])
 	srand((unsigned)time(NULL));
 
 	int ndetails, ntacts, nstages;
-//	clock_t start, t_sync, t_async;
 	int t_sync, t_async;
 
 	// Init stuff
@@ -135,24 +134,18 @@ int main(int argc, char *argv[])
 
 	pipe = (int *)malloc(nstages * sizeof(int));
 
-//	start = clock();
 	t_sync = sync_routine(ndetails, ntacts, nstages);
-//	t_sync = clock() - start;
 
 	printf("T_SYNC: %d tics\n", t_sync);
 
 	// --- ASYNC ---------
 
-//	memset(&pipe, 0, nstages * sizeof(int));
-
-//	start = clock();
 	t_async = async_routine(ndetails, ntacts, nstages);
-//	t_async = clock() - start;
 
 	printf("T_ASYNC: %d tics\n", t_async);
 
 	printf("T_SYNC / T_ASYNC = %.5lf\n", (double) t_sync / t_async);
 
-//	free(pipe);
+	free(pipe);
 	return 0;
 }
