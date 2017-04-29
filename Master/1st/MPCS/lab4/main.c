@@ -65,9 +65,8 @@ int main(int argc, char **argv)
 		for (j = i; j < N; ++j) {
 			if (j == i)
 				mtx[i][j] = 0;
-			else {
+			else
 				mtx[i][j] = mtx[j][i] = 1 + rand() % 100;
-			}
 		}
 	}
 
@@ -113,15 +112,10 @@ int main(int argc, char **argv)
 			wayz[i][j] = alpha[j];
 		wayz[i][N] = alpha[0];
 
-//		printf("[%d]: %s, ", i, wayz[i]);
-
 		s = 0;
 
-		for (j = 0; j < N; ++j) {
-//				printf("%c%c\n", wayz[i][j],wayz[i][j+1]);
-				s += mtx[(int)wayz[i][j] - 65][(int)wayz[i][j + 1] - 65];
-		}
-//		printf("length: %d\n", s);
+		for (j = 0; j < N; ++j)
+			s += mtx[(int)wayz[i][j] - 65][(int)wayz[i][j + 1] - 65];
 
 		if (min > s) {
 			min = s;
@@ -131,13 +125,7 @@ int main(int argc, char **argv)
 		++i;
 
 	} while (!permutate(alpha + 1, N - 1, &M));
-/*
-	for (i = 0; i < M; ++i) {
-		for (j = 0; j < N + 1; ++j)
-			printf(" %c ", wayz[i][j]);
-		putchar('\n');
-	}
-*/
+
 	clock_t elapsed = clock() - start;
 
 	fp = fopen("result", "a+");
