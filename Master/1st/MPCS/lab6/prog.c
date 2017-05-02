@@ -36,12 +36,10 @@ int main(int argc, char *argv[])
 			lm_t = 0;
 		}
 
-		if (mu_p < PROB(mu, mu_t)) {
-			if (qcnt) {
-				--qcnt;
-				++tdone;
-				mu_t = 0;
-			}
+		if ((mu_p < PROB(mu, mu_t)) && qcnt) {
+			--qcnt;
+			++tdone;
+			mu_t = 0;
 		}
 	}
 
