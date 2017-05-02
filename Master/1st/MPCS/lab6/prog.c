@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
 
 	static uint32_t qcnt = 0;
 
-	uint32_t lm_t;
-	uint32_t mu_t;
+	uint32_t lm_t = 0;
+	uint32_t mu_t = 0;
 
 	for (i = 0; i < N; ++i, ++lm_t, ++mu_t) {
 		float lm_p = drand48();
