@@ -1,5 +1,5 @@
-#ifndef _CRC32BF_H_
-#define _CRC32BF_H_
+#ifndef _CRC32_H_
+#define _CRC32_H_
 
 #define CRCPOLY 0x04c11db7U
 
