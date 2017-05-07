@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
 
 	srand48((unsigned)time(NULL));
 
+	FILE *fp;
+
 	int i, treq = 0, tdone = 0;
 
 	int    N = atoi(argv[1]);
@@ -23,8 +25,13 @@ int main(int argc, char *argv[])
 
 	static uint32_t qcnt = 0;
 
-	uint32_t lm_t = 0;
-	uint32_t mu_t = 0;
+	uint32_t lm_t;
+	uint32_t mu_t;
+
+	if (!(fp = fopen("result.log", "w"))) {
+		fprintf(stderr, "Cannot create the file.\n");
+		exit(1);
+	}
 
 	for (i = 0; i < N; ++i, ++lm_t, ++mu_t) {
 		float lm_p = drand48();
@@ -41,6 +48,8 @@ int main(int argc, char *argv[])
 			++tdone;
 			mu_t = 0;
 		}
+
+		fprintf(fp, "%d %d\n", i, qcnt);
 	}
 
 	printf("#%d : tasks [%d] : busy [%d]\n",
@@ -48,6 +57,8 @@ int main(int argc, char *argv[])
 
 	printf("Tasks (req/done): %d / %d\n",
 		treq, tdone);
+
+	fclose(fp);
 
 	return 0;
 }
