@@ -5,6 +5,62 @@
 
 int *pipe;	// conveyor
 
+int sync_routine(int nd, int nt, int ns);
+int async_routine(int nd, int nt, int ns);
+
+int main(int argc, char *argv[])
+{
+	if (argc != 4) {
+		fprintf(stderr, "Input args, dude: ndet, ntac, nst.\n");
+		exit(1);
+	}
+
+	srand((unsigned)time(NULL));
+
+	FILE *fp1, *fp2;
+
+	int ndetails, ntacts, nstages;
+	int t_sync, t_async;
+
+	if (!(fp1 = fopen("result1.log", "a+"))) {
+		fprintf(stderr, "Cannot create/open the file.\n");
+		exit(1);
+	}
+
+	if (!(fp2 = fopen("result2.log", "a+"))) {
+		fprintf(stderr, "Cannot create/open the file.\n");
+		exit(1);
+	}
+
+	// Init stuff
+	ndetails = atoi(argv[1]);
+	ntacts = atoi(argv[2]);
+	nstages = atoi(argv[3]);
+
+	// --- SYNC ---------
+
+	pipe = (int *)malloc(nstages * sizeof(int));
+
+	t_sync = sync_routine(ndetails, ntacts, nstages);
+
+	printf("T_SYNC: %d tics\n", t_sync);
+
+	// --- ASYNC ---------
+
+	t_async = async_routine(ndetails, ntacts, nstages);
+
+	printf("T_ASYNC: %d tics\n", t_async);
+
+	printf("T_SYNC / T_ASYNC = %.5lf\n", (double) t_sync / t_async);
+//	fprintf(fp1, "%d %d %d\n", ndetails, t_sync, t_async);
+	fprintf(fp2, "%d %d %d\n", nstages, t_sync, t_async);
+
+	fclose(fp1);
+	fclose(fp2);
+
+	return 0;
+}
+
 /* Sync pipe routine*/
 int sync_routine(int nd, int nt, int ns)
 {
@@ -113,39 +169,3 @@ int async_routine(int nd, int nt, int ns)
 	return total_tics;
 }
 
-int main(int argc, char *argv[])
-{
-	if (argc != 4) {
-		printf("Input args, dude: ndetails, ntacts, nstages.\n");
-		return -1;
-	}
-
-	srand((unsigned)time(NULL));
-
-	int ndetails, ntacts, nstages;
-	int t_sync, t_async;
-
-	// Init stuff
-	ndetails = atoi(argv[1]);
-	ntacts = atoi(argv[2]);
-	nstages = atoi(argv[3]);
-
-	// --- SYNC ---------
-
-	pipe = (int *)malloc(nstages * sizeof(int));
-
-	t_sync = sync_routine(ndetails, ntacts, nstages);
-
-	printf("T_SYNC: %d tics\n", t_sync);
-
-	// --- ASYNC ---------
-
-	t_async = async_routine(ndetails, ntacts, nstages);
-
-	printf("T_ASYNC: %d tics\n", t_async);
-
-	printf("T_SYNC / T_ASYNC = %.5lf\n", (double) t_sync / t_async);
-
-	free(pipe);
-	return 0;
-}
