@@ -14,5 +14,8 @@ all: clean $(EXEC)
 $(EXEC):
 	$(CC) $(CFLAGS) $(INCLUDES) $(EXEC).c $(SOURCES) $(GTK2)
 
+run:
+	./a.out
+
 clean:
-	rm -f *.out
+	rm -f a.out
