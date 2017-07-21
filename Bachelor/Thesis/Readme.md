@@ -1,4 +1,4 @@
-# Bachelor's Thesis
+# GPU path tracer on OpenCL
 
 ### --- Descr --------------------------
 
