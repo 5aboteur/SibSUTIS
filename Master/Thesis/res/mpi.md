@@ -39,6 +39,7 @@
 11. [Kernel Level Blocking MPI](http://www-sys-aics.riken.jp/ResearchTopics/com/KernelLevelBlockingMPI.html)
 12. [About queues](http://mpi-forum.org/docs/msgq.5.pdf)
 13. [Shared Receive Queue - MVAPICH](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.8328&rep=rep1&type=pdf)
+14. [OpenMPI Pt2Pt Communications Methodology](https://www.open-mpi.org/papers/euro-pvmmpi-2004-p2p/euro-pvmmpi-2004-p2p.pdf)
 --------------------------------------------------------------------
 ### Other
 1. [Parallel](http://parallel.ru/)
