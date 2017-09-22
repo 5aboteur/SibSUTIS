@@ -1,0 +1,8 @@
+MPICH Version:    	3.2
+MPICH Release date:	Wed Nov 11 22:06:48 CST 2015
+MPICH Device:    	ch3:nemesis
+MPICH configure: 	--prefix=/opt/mpich --enable-error-checking=runtime --enable-error-messages=all --enable-mpit-pvars=all --enable-debuginfo --enable-versioning --enable-threads=multiple --enable-shared --enable-sharedlibs=gcc --enable-timer-type=clock_gettime
+MPICH CC: 	gcc    -O2
+MPICH CXX: 	g++   -O2
+MPICH F77: 	gfortran   -O2
+MPICH FC: 	gfortran   -O2
