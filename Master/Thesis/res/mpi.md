@@ -16,6 +16,13 @@
 3. [Pavan Balaji](http://www.mcs.anl.gov/~balaji/index.php)
 4. [Daniel Holmes](https://www.epcc.ed.ac.uk/blogs/daniel-holmes)
 5. [Jeff Squyres](http://blogs.cisco.com/author/jeffsquyres)
+([TPE](https://blogs.cisco.com/performance/mpi-progress))
+([SHM pt.1](http://blogs.cisco.com/performance/shared-memory-as-an-mpi-transport))
+([SHM pt.2](https://blogs.cisco.com/performance/shared-memory-as-an-mpi-transport-part-2))
+([SRQ](https://blogs.cisco.com/performance/shared-receive-queues))
+([EAGER pt.1](http://blogs.cisco.com/performance/what-is-an-mpi-eager-limit))
+([EAGER pt.2](https://blogs.cisco.com/performance/eager-limits-part-2))
+([UMQ](https://blogs.cisco.com/performance/unexpected-messages-evil))
 
 ### Conferences
 1. [EuroMPI'17](http://www.mcs.anl.gov/eurompi2017/)
