@@ -1,0 +1,43 @@
+mpirun -n 2 ./a.out
+
+┌───────────────────────────────────────────────────────────┐
+│  #  │		MPI PERFORMANCE VARIABLES {10}		    │
+├───────────────────────────────────────────────────────────┤
+│   0 │ nem_fbox_fall_back_to_queue_count                   │
+│   1 │ posted_recvq_length                                 │
+│   2 │ unexpected_recvq_length                             │
+│   3 │ posted_recvq_match_attempts                         │
+│   4 │ unexpected_recvq_match_attempts                     │
+│   5 │ time_failed_matching_postedq                        │
+│   6 │ time_failed_matching_postedq                        │
+│   7 │ time_matching_unexpectedq                           │
+│   8 │ time_matching_unexpectedq                           │
+│   9 │ unexpected_recvq_buffer_size                        │
+┌───────────────────────────────────────────────────────────┐
+│  #  │		MPI CONTROL VARIABLES {71}		    │
+├───────────────────────────────────────────────────────────┤
+│	  . . .                                             │
+│  30 │ MPIR_CVAR_CTXID_EAGER_SIZE                          │
+│  42 │ MPIR_CVAR_CH3_EAGER_MAX_MSG_SIZE                    │
+│  56 │ MPIR_CVAR_NEMESIS_SHM_EAGER_MAX_SZ                  │
+│  57 │ MPIR_CVAR_NEMESIS_SHM_READY_EAGER_MAX_SZ            │
+│  60 │ MPIR_CVAR_NEMESIS_LMT_DMA_THRESHOLD                 │
+│	  . . .                                             │
+└─> [1;33mCH3[0m Eager limit: 131072
+└─> [1;33mNEM[0m LMT threshold: 2097152
+
+ > EAGER TEST <
+Message size: 40 (x 5)
+
+<0> -- Message delivered!
+
+UMQ size: 4
+UMQ size: 3
+UMQ size: 2
+UMQ size: 1
+UMQ size: 0
+
+<1> -- Message received!
+
+ > RNDV TEST <
+Message size: 100000 (x 5)

@@ -3,24 +3,30 @@
 #include <string.h>
 #include <mpi.h>
 
-#define MSGSIZE 10
+#define EAGER_MSG_SIZE 10
+#define RNDV_MSG_SIZE 25000
+
 #define NAMELEN 100
+
+int test_eager(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int rank);
+int test_rndv(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int rank);
 
 int get_cvar_value(int index, MPI_Comm comm, int *val);
 int print_all_cvars(void);
-
-//int get_pvar_value(int index, MPI_Comm comm, int *val);
 int print_all_pvars(void);
+
 void _print_title(char *str, int n);
 
 int main(int argc, char *argv[])
 {
     int i, err, size, rank, dest, src, tag = 1337;
-    int cvar_val;
+    int cvar_val, pvar_val, count;
     int threadsupport;
-    int msg[MSGSIZE];
 
     MPI_Status status;
+
+    MPI_T_pvar_session session;
+    MPI_T_pvar_handle umq_sz_handler;
 
     // Init MPI
     err = MPI_Init_thread(0, 0, MPI_THREAD_SINGLE, &threadsupport);
@@ -38,8 +44,6 @@ int main(int argc, char *argv[])
     err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (err != MPI_SUCCESS) return err;
 
-//    printf("Comm size: %d\n Comm rank: %d\n", size, rank);
-
     // Print MPI vars
     if (rank == 0) {
         printf("\n");
@@ -48,8 +52,6 @@ int main(int argc, char *argv[])
 
         err = print_all_cvars();
         if (err != MPI_SUCCESS) return err;
-
-//        printf("\u2502\n");
 
         // 42 ~> MPIR_CVAR_CH3_EAGER_MAX_MSG_SIZE
         err = get_cvar_value(42, MPI_COMM_WORLD, &cvar_val);
@@ -63,32 +65,27 @@ int main(int argc, char *argv[])
 
         printf("\u2514\u2500> \033[1;33mNEM\033[0m LMT threshold: %d\n\n", cvar_val);
     }
-/*
-    // Sender side
-    if (rank == 0) {
-        for (i = 0; i < MSGSIZE; ++i)
-            msg[i] = i;
 
-        err = MPI_Send(msg, MSGSIZE, MPI_INT, 1, tag, MPI_COMM_WORLD);
-        if (err != MPI_SUCCESS) return err;
-    }
+    // 2 ~> unexpected_recvq_buffer_size
+    MPI_T_pvar_session_create(&session);
+    MPI_T_pvar_handle_alloc(session, 2, NULL, &umq_sz_handler, &count);
 
-    // Receiver side
-    if (rank == 1) {
-        for (i = 0; i < MSGSIZE; ++i)
-            msg[i] = -1;
+    // Test send thru Eager proto
+    if (rank == 0)
+        printf(" > EAGER TEST <\n");
+    err = test_eager(session, umq_sz_handler, rank);
+    if (err != MPI_SUCCESS) return err;
 
-        err = MPI_Recv(msg, MSGSIZE, MPI_INT, 0, tag, MPI_COMM_WORLD, &status);
-        if (err != MPI_SUCCESS) return err;
+    // Test send thru Rendezvous proto
+    if (rank == 0)
+        printf(" > RNDV TEST <\n");
+    err = test_rndv(session, umq_sz_handler, rank);
+    if (err != MPI_SUCCESS) return err;
 
-        printf("Gotcha! Here it is: ");
+    // Free session
+    MPI_T_pvar_handle_free(session, &umq_sz_handler);
+    MPI_T_pvar_session_free(&session);
 
-        for (i = 0; i < MSGSIZE; ++i)
-            printf("%d ", msg[i]);
-
-        printf("\n");
-    }
-*/
     // MPI tools interface job is done
     err = MPI_T_finalize();
     if (err != MPI_SUCCESS) return err;
@@ -97,9 +94,121 @@ int main(int argc, char *argv[])
     err = MPI_Finalize();
     if (err != MPI_SUCCESS) return err;
 
-//    printf("\nJob is done!\n");
+    printf("\n<%d> -- Job is done!\n", rank);
 
     return 0;
+}
+
+int test_eager(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int rank)
+{
+    int err, pvar_val;
+
+    // Sender side
+    if (rank == 0) {
+        int i;
+        size_t send_buf[EAGER_MSG_SIZE];
+
+        for (i = 0; i < EAGER_MSG_SIZE; ++i)
+            send_buf[i] = 666;
+
+        printf("Message size: %li (x 5)\n", EAGER_MSG_SIZE * sizeof(int));
+
+        for (i = 0; i < 5; ++i) {
+            err = MPI_Send(send_buf, EAGER_MSG_SIZE, MPI_INT, 1, i, MPI_COMM_WORLD);
+            if (err != MPI_SUCCESS) return err;
+        }
+    }
+
+    // Receiver side
+    if (rank == 1) {
+        int i;
+        size_t recv_buf[EAGER_MSG_SIZE];
+
+        MPI_Status status;
+
+        for (i = 0; i < EAGER_MSG_SIZE; ++i)
+            recv_buf[i] = -1;
+
+        for (i = 4; i >= 0; --i) {
+            err = MPI_Recv(recv_buf, EAGER_MSG_SIZE, MPI_INT, 0, i, MPI_COMM_WORLD, &status);
+            if (err != MPI_SUCCESS) return err;
+
+            MPI_T_pvar_read(session, pvar_handler, &pvar_val);
+            printf("UMQ size: %d\n", pvar_val);
+
+//            printf("Gotcha! Here it is: ");
+
+//            for (i = 0; i < EAGER_MSG_SIZE; ++i)
+//                printf("%d ", recv_buf[i]);
+
+//            printf("\n");
+        }
+    }
+
+    if (rank == 0)
+        printf("\n<%d> -- Message delivered!\n\n", rank);
+    else
+        printf("\n<%d> -- Message received!\n\n", rank);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    return err;
+}
+
+int test_rndv(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int rank)
+{
+    int err, pvar_val;
+
+    // Sender side
+    if (rank == 0) {
+        int i;
+        size_t send_buf[RNDV_MSG_SIZE];
+
+        for (i = 0; i < RNDV_MSG_SIZE; ++i)
+            send_buf[i] = 999;
+
+        printf("Message size: %li (x 5)", RNDV_MSG_SIZE * sizeof(int));
+
+        for (i = 0; i < 5; ++i) {
+            err = MPI_Send(send_buf, RNDV_MSG_SIZE, MPI_INT, 1, i, MPI_COMM_WORLD);
+            if (err != MPI_SUCCESS) return err;
+        }
+    }
+
+    // Receiver side
+    if (rank == 1) {
+        int i;
+        size_t recv_buf[RNDV_MSG_SIZE];
+
+        MPI_Status status;
+
+        for (i = 0; i < RNDV_MSG_SIZE; ++i)
+            recv_buf[i] = -1;
+
+        for (i = 4; i >= 0; --i) {
+            err = MPI_Recv(recv_buf, RNDV_MSG_SIZE, MPI_INT, 0, i, MPI_COMM_WORLD, &status);
+            if (err != MPI_SUCCESS) return err;
+
+            MPI_T_pvar_read(session, pvar_handler, &pvar_val);
+            printf("UMQ size: %d\n", pvar_val);
+
+//            printf("Gotcha! Here it is: ");
+
+//            for (i = 0; i < EAGER_MSG_SIZE; ++i)
+//                printf("%d ", recv_buf[i]);
+
+//            printf("\n");
+        }
+    }
+
+    if (rank == 0)
+        printf("\n<%d> -- Message delivered!\n\n", rank);
+    else
+        printf("\n<%d> -- Message received!\n\n", rank);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    return err;
 }
 
 int get_cvar_value(int index, MPI_Comm comm, int *val)
