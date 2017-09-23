@@ -4,7 +4,7 @@
 #include <mpi.h>
 
 #define EAGER_MSG_SIZE 10
-#define RNDV_MSG_SIZE 25000
+#define RNDV_MSG_SIZE 1000000
 
 #define NAMELEN 100
 
@@ -72,13 +72,13 @@ int main(int argc, char *argv[])
 
     // Test send thru Eager proto
     if (rank == 0)
-        printf(" > EAGER TEST <\n");
+        printf("\033[1;32m > EAGER TEST < \033[0m\n");
     err = test_eager(session, umq_sz_handler, rank);
     if (err != MPI_SUCCESS) return err;
 
     // Test send thru Rendezvous proto
     if (rank == 0)
-        printf(" > RNDV TEST <\n");
+        printf("\033[1;31m > RNDV TEST < \033[0m\n");
     err = test_rndv(session, umq_sz_handler, rank);
     if (err != MPI_SUCCESS) return err;
 
@@ -116,6 +116,7 @@ int test_eager(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int r
         for (i = 0; i < 5; ++i) {
             err = MPI_Send(send_buf, EAGER_MSG_SIZE, MPI_INT, 1, i, MPI_COMM_WORLD);
             if (err != MPI_SUCCESS) return err;
+            printf("<%d> -- Chunk %d sent\n", rank, i);
         }
     }
 
@@ -134,6 +135,7 @@ int test_eager(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int r
             if (err != MPI_SUCCESS) return err;
 
             MPI_T_pvar_read(session, pvar_handler, &pvar_val);
+            printf("<%d> -- Chunk %d received\n", rank, i);
             printf("UMQ size: %d\n", pvar_val);
 
 //            printf("Gotcha! Here it is: ");
@@ -167,11 +169,12 @@ int test_rndv(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int ra
         for (i = 0; i < RNDV_MSG_SIZE; ++i)
             send_buf[i] = 999;
 
-        printf("Message size: %li (x 5)", RNDV_MSG_SIZE * sizeof(int));
+        printf("Message size: %li (x 5)\n", RNDV_MSG_SIZE * sizeof(int));
 
         for (i = 0; i < 5; ++i) {
             err = MPI_Send(send_buf, RNDV_MSG_SIZE, MPI_INT, 1, i, MPI_COMM_WORLD);
             if (err != MPI_SUCCESS) return err;
+            printf("<%d> -- Chunk %d sent\n", rank, i);
         }
     }
 
@@ -185,11 +188,12 @@ int test_rndv(MPI_T_pvar_session session, MPI_T_pvar_handle pvar_handler, int ra
         for (i = 0; i < RNDV_MSG_SIZE; ++i)
             recv_buf[i] = -1;
 
-        for (i = 4; i >= 0; --i) {
+        for (i = 0; i < 5; ++i) {
             err = MPI_Recv(recv_buf, RNDV_MSG_SIZE, MPI_INT, 0, i, MPI_COMM_WORLD, &status);
             if (err != MPI_SUCCESS) return err;
 
             MPI_T_pvar_read(session, pvar_handler, &pvar_val);
+            printf("<%d> -- Chunk %d received\n", rank, i);
             printf("UMQ size: %d\n", pvar_val);
 
 //            printf("Gotcha! Here it is: ");

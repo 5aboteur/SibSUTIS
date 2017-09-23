@@ -26,18 +26,53 @@ mpirun -n 2 ./a.out
 └─> [1;33mCH3[0m Eager limit: 131072
 └─> [1;33mNEM[0m LMT threshold: 2097152
 
- > EAGER TEST <
+[1;32m > EAGER TEST < [0m
 Message size: 40 (x 5)
+<0> -- Chunk 0 sent
+<0> -- Chunk 1 sent
+<0> -- Chunk 2 sent
+<0> -- Chunk 3 sent
+<0> -- Chunk 4 sent
 
 <0> -- Message delivered!
 
+<1> -- Chunk 4 received
 UMQ size: 4
+<1> -- Chunk 3 received
 UMQ size: 3
+<1> -- Chunk 2 received
 UMQ size: 2
+<1> -- Chunk 1 received
 UMQ size: 1
+<1> -- Chunk 0 received
 UMQ size: 0
 
 <1> -- Message received!
 
- > RNDV TEST <
-Message size: 100000 (x 5)
+[1;31m > RNDV TEST < [0m
+Message size: 4000000 (x 5)
+<0> -- Chunk 0 sent
+<1> -- Chunk 0 received
+UMQ size: 0
+<0> -- Chunk 1 sent
+<1> -- Chunk 1 received
+UMQ size: 0
+<0> -- Chunk 2 sent
+<1> -- Chunk 2 received
+UMQ size: 0
+<0> -- Chunk 3 sent
+<1> -- Chunk 3 received
+UMQ size: 0
+<0> -- Chunk 4 sent
+
+<0> -- Message delivered!
+
+<1> -- Chunk 4 received
+UMQ size: 0
+
+<1> -- Message received!
+
+
+<0> -- Job is done!
+
+<1> -- Job is done!
