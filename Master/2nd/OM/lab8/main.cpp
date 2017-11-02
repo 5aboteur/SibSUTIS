@@ -9,7 +9,7 @@ using namespace std;
 
 typedef chrono::high_resolution_clock Clock;
 
-double dijkstra(vector <vector<pair<int, int>> > g, int *shortest_path, int size, int from, int to);
+int dijkstra(vector <vector<pair<int, int>> >, int, int, int);
 
 int main(int argc, char *argv[])
 {
@@ -31,15 +31,15 @@ int main(int argc, char *argv[])
 		g[v_from].push_back(make_pair(v_to, weight));
 	}
 
-	/* PRINT ALL WAYS */
+	/* PRINT ALL distancesS */
 
 	cout << endl;
 
-	for (auto i = 0; i < g.size(); ++i)
+	for (auto i = 0; i < size; ++i)
 	{
-		cout << "(" << i << ") ~> ";
+		cout << "(" << i << ") > ";
 
-		for (auto j = 0; j < g[i].size(); ++j)
+		for (size_t j = 0; j < g[i].size(); ++j)
 		{
 			cout << "(" << g[i][j].first << ") = " << g[i][j].second << ", ";
 		}
@@ -48,83 +48,67 @@ int main(int argc, char *argv[])
 	}
 
 	cout << endl << "Searching shortest path from (" << from << ") to (" <<
-		to << ") ...";
+		to << ") ..." << endl;
 
 	/* FIND SHORTEST PATH */
 
-	int shortest_path[size];
-
 	auto t_start = Clock::now();
-	auto shortest_distance = dijkstra(g, shortest_path, size, from, to);
+	auto shortest_distance = dijkstra(g, size, from, to);
 	auto t_end = Clock::now();
 
 	/* PRINT RESULTS */
 
-	cout << endl << "Shortest path:";
-
-	for (auto i = 0; i < size; ++i)
-	{
-		cout << " " << shortest_path[i];
-	}
-
 	cout << endl << "Distance: " << shortest_distance << ", Time: " <<
-		chrono::duration_cast<chrono::nanoseconds>(t_end - t_start).count() <<
-		" ns" << endl;
+		chrono::duration_cast<chrono::milliseconds>(t_end - t_start).count() <<
+		" ms" << endl;
 
 	return 0;
 }
 
-double dijkstra(vector <vector<pair<int, int>> > g, int *shortest_path, int size, int from, int to)
+int dijkstra(vector <vector<pair<int, int>> > g, int size, int from, int to)
 {
-	auto shortest_distance = 0.0;
-	auto min_dist_idx = INT_MAX;
-	vector<pair<int, int>> way(size);
+	vector<pair<int, bool>> distances(size);
 
 	for (auto i = 0; i < size; ++i)
 	{
 		if (i == from)
 		{
-			way.push_back(make_pair(0, 1));
+			distances[i].first = 0;
+			distances[i].second = true;
 			continue;
 		}
 
-		way.push_back(make_pair(INT_MAX, 1));
+		distances[i].first = INT_MAX;
+		distances[i].second = true;
 	}
 
 	for (auto i = 0; i < size; ++i)
-		cout << endl << way[i].first << " " << way[i].second << endl;
-
-	for (auto i = 0; i < size; ++i)
 	{
-/*		auto min_dist = g[from][0];
-		auto min_dist_idx = 0;
+		auto min_dist_idx = -1;
 
-		for (auto j = 1; j < g[from].size(); ++j)
+		for (auto j = 0; j < size; ++j)
 		{
-			if (way[i].second && g[from][j].second < min_dist)
+			if (distances[j].second && (min_dist_idx == -1 || distances[j].first < distances[min_dist_idx].first))
 			{
-				min_dist = g[from][j].second;
 				min_dist_idx = j;
 			}
 		}
 
-		shortest_distance += min_dist;
-		way[from].second = false;
-		from = 
-*/
+		if (distances[min_dist_idx].first == INT_MAX) break;
 
-		for (auto j = 0; j < size; ++j)
+		distances[min_dist_idx].second = false;
+
+		for (size_t j = 0; j < g[min_dist_idx].size(); ++j)
 		{
-			if (way[j].second)
+			auto next_to = g[min_dist_idx][j].first;
+			auto len = g[min_dist_idx][j].second;
+
+			if (distances[min_dist_idx].first + len < distances[next_to].first)
 			{
-				way[j].first = min(way[j].first, way[from].first + g[from][j].second); // ?
-				min_dist_idx = min(way[j].first, min_dist_idx);
+				distances[next_to].first = distances[min_dist_idx].first + len;
 			}
 		}
-
-		way[from].second = false;
-		from = min_dist_idx;
 	}
 
-	return shortest_distance;
+	return distances[to].first;
 }
