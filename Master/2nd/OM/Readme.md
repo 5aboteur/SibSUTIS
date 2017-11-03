@@ -7,7 +7,7 @@
 |  3  | Matrix chain multiplication |  **done**  |
 |  4  | Knapsack                    |  **50/50** |
 |  5  | Ladder                      |  **done**  |
-|  6  | Rabbit                      |  **done**  |
+|  6  | Lepus                       |  **done**  |
 |  7  | Descent                     |  **done**  |
 |  8  | King                        |  **done**  |
 |  9  | Dijkstra's algorithm        |  **50/50** |
