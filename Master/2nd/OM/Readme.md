@@ -6,7 +6,7 @@
 |  2  | Gradient method             |      x     |
 |  3  | Matrix chain multiplication |  **done**  |
 |  4  | Knapsack                    |  **done**  |
-|  5  | Stairs                      |  **done**  |
+|  5  | Ladder                      |  **done**  |
 |  6  | Rabbit                      |  **done**  |
 |  7  | Descent                     |  **done**  |
 |  8  | King                        |  **done**  |
