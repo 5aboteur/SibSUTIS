@@ -5,7 +5,7 @@
 |  1  | Ternary search              |      x     |
 |  2  | Gradient method             |      x     |
 |  3  | Matrix chain multiplication |  **done**  |
-|  4  | Knapsack                    |  **done**  |
+|  4  | Knapsack                    |  **50/50** |
 |  5  | Ladder                      |  **done**  |
 |  6  | Rabbit                      |  **done**  |
 |  7  | Descent                     |  **done**  |
