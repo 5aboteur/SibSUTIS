@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		cout << endl;
 	}
 
-	cout << endl << "Total points: " << prices[size][amount] << ", Time: " <<
+	cout << endl << "Total price: " << prices[size][amount] << ", Time: " <<
 		chrono::duration_cast<chrono::milliseconds>(t_end - t_start).count() <<
 		" ms" << endl;
 
