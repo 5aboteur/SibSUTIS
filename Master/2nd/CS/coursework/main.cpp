@@ -1,14 +1,139 @@
+#include <algorithm>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <cmath>
 #include <string>
 #include <thread>
 
-#include "device_logic.h"
+#include "device.h"
+#include "schedule.h"
 
-#define TASKS_COUNT	100
+#define TASKS_COUNT 100
 
-bool JOB_IS_DONE = false;
+struct Stats {
+	Stats(std::string _dtype, double _uptime, double _dt, double _delay, int _n, int _ct, int _id)
+		: dtype(_dtype), uptime(_uptime), dt(_dt), delay(_delay), n(_n), ct(_ct), id(_id) {}
+
+	std::string dtype;
+
+	double uptime;
+	double dt;
+	double delay;
+
+	int n;
+	int ct;
+
+	int id;
+};
+
+double exp_distr(double, double);
+double uni_distr(double, double);
+
+void DoProgress(std::vector<std::shared_ptr<Device>> & devices, double dt, std::shared_ptr<Schedule> schedule);
+void PrintStatistics(std::vector<std::shared_ptr<std::pair<Stats, Stats>>> & statistics);
+
+int main()
+{
+	srand((unsigned)time(NULL));
+
+	int iter = 1;
+	int k = 2;
+	size_t n = 6;
+
+	auto devices = std::vector<std::shared_ptr<Device>>();
+	auto statistics = std::vector<std::shared_ptr<std::pair<Stats, Stats>>>();
+
+	auto tau = std::vector<double>();
+
+	for (int i = 0; i < iter; ++i)
+	{
+		auto dt = uni_distr(0.7, 1.1);
+		tau.push_back(dt);
+	}
+
+	std::sort(tau.begin(), tau.end());
+
+	auto lambda = std::vector<double>();
+
+	for (int i = 0; i < iter; ++i)
+	{
+		auto ksi = uni_distr(0.0, 1.0);
+		auto dt = exp_distr(ksi, 0.8);
+		lambda.push_back(dt);
+	}
+
+	std::sort(lambda.begin(), lambda.end());
+
+	int exp = 0;
+
+	for (auto dt : tau)
+	{
+		for (auto lm : lambda)
+		{
+			double uptime = 0.0;
+
+			devices.push_back(std::make_shared<Device>("fast", lm));
+			devices.push_back(std::make_shared<Device>("slow", lm * k));
+
+			auto fast = devices[0];
+			auto slow = devices[1];
+
+			auto schedule = std::make_shared<Schedule>();
+
+			// Spread tasks
+			for (int i = 1; i <= TASKS_COUNT; ++i)
+			{
+				if (fast->GetTaskQueue().size() < n)
+				{
+					fast->Enqueue(Task(i, dt * i));
+				}
+				else
+				{
+					slow->Enqueue(Task(i, dt * i));
+				}
+
+				DoProgress(devices, dt, schedule);
+
+				uptime += dt;
+			}
+
+			// Wait 'til devices complete their work
+			while (schedule->Get().size() != TASKS_COUNT)
+			{
+				if (fast->GetTaskQueue().size() < n)
+				{
+					while (!slow->GetTaskQueue().empty() && fast->GetTaskQueue().size() < n)
+					{
+						fast->Enqueue(slow->GetTaskQueue().front());
+						slow->Dequeue();
+					}
+				}
+
+				DoProgress(devices, dt, schedule);
+
+				uptime += dt;
+			}
+
+			++exp;
+
+			auto fast_stat = Stats(fast->GetType(), uptime, dt, fast->GetDelay(), n, fast->GetCompletedTasksCount(), exp);
+			auto slow_stat = Stats(slow->GetType(), uptime, dt, slow->GetDelay(), -1, slow->GetCompletedTasksCount(), exp);
+			auto stat = std::make_shared<std::pair<Stats, Stats>>(std::make_pair(fast_stat, slow_stat));
+			statistics.push_back(stat);
+
+			schedule->Sort();
+			schedule->PrintSchedule();
+
+			devices.clear();
+		}
+	}
+
+	PrintStatistics(statistics);
+
+	getchar();
+	return 0;
+}
 
 double exp_distr(double ksi, double lambda)
 {
@@ -22,93 +147,44 @@ double uni_distr(double a, double b)
 	return number;
 }
 
-void DeviceRoutine(std::shared_ptr<Device> device, double device_time);
-
-int main()
+void DoProgress(std::vector<std::shared_ptr<Device>> & devices, double dt, std::shared_ptr<Schedule> schedule)
 {
-	srand((unsigned)time(NULL));
-
-	int k = 2;
-	size_t n = 6;
-	double lambda = 1.0;
-
-	auto dev1 = std::make_shared<Device>("fast");
-	auto dev2 = std::make_shared<Device>("slow");
-
-	std::thread fastDeviceHandler(DeviceRoutine, dev1, lambda);
-	std::thread slowDeviceHandler(DeviceRoutine, dev2, lambda * k);
-
-	for (int i = 0; i < TASKS_COUNT; ++i)
+	for (auto & device : devices)
 	{
-		double tau = uni_distr(0.7, 1.1);
-		Task task(i, tau);
+		device->IncreaseProgressTime(dt);
 
-		double ksi = uni_distr(0.0, 1.0);
-		double whatsThis = exp_distr(ksi, lambda);	// ???
-
-		if (dev1->GetTaskQueue()->size() < n)
+		if (device->Progress())
 		{
-			dev1->Enqueue(task);
-		}
-		else
-		{
-			dev2->Enqueue(task);
+			schedule->AddEvent(Event(device->GetType(), device->GetTaskQueue().front().id, device->GetTaskQueue().front().arrived_time, device->GetLastCompletedTaskTime()));
+			device->Dequeue();
+			device->IncreaseCompletedTasksCounter();
 		}
 	}
-
-	while (!dev1->GetTaskQueue()->empty() && !dev2->GetTaskQueue()->empty())
-	{
-		if (dev1->GetTaskQueue()->size() < n)
-		{
-			auto task = dev2->Dequeue();
-			dev1->Enqueue(task);
-		}
-	}
-
-	JOB_IS_DONE = true;
-
-	fastDeviceHandler.join();
-	slowDeviceHandler.join();
-
-	std::cout << "\nJob is done!\n\n";
-	std::cout << "[Dev1] uptime: " << dev1->GetUptime() << ", tasks completed: " << dev1->GetCompletedTasksCount()
-		<< ", avg time in queue: " << dev1->GetUptime() / dev1->GetCompletedTasksCount() << " ms\n";
-
-	std::cout << "[Dev2] uptime: " << dev2->GetUptime() << ", tasks completed: " << dev2->GetCompletedTasksCount()
-		<< ", avg time in queue: " << dev2->GetUptime() / dev2->GetCompletedTasksCount() << " ms\n";
-
-	getchar();
-	return 0;
 }
 
-void DeviceRoutine(std::shared_ptr<Device> device, double device_time)
+void PrintStatistics(std::vector<std::shared_ptr<std::pair<Stats, Stats>>> & statistics)
 {
-	while (1)
+	std::cout << "  # |  tau | type | delay |  n  | tasks |  avg  \n";
+	std::cout << "------------------------------------------------\n";
+
+	for (const auto & stat : statistics)
 	{
-		if (device->GetTaskQueue()->size() > 0) 
-		{
-			int task_id = device->GetTaskQueue()->front().id;
-			double task_time = device->GetTaskQueue()->front().t;
-			long wait_time = (long)(task_time * device_time * 100);
+		std::cout << std::fixed << std::setw(3) << stat->first.id << " | "
+			<< std::setw(4) << std::setprecision(2) << stat->first.dt << " | "
+			<< std::setw(4) << stat->first.dtype << " | "
+			<< std::setw(5) << std::setprecision(2) << stat->first.delay << " | "
+			<< std::setw(3) << stat->first.n << " | "
+			<< std::setw(5) << stat->first.ct << " | "
+			<< std::setw(5) << std::setprecision(2) << stat->second.uptime / TASKS_COUNT << "\n";
 
-			device->IncreaseUptime(wait_time);
-			device->IncreaseCompletedTasks();
-			device->Dequeue();
+		std::cout << std::fixed << std::setw(3) << " " << " | "
+			<< std::setw(4) << std::setprecision(2) << stat->second.dt << " | "
+			<< std::setw(4) << stat->second.dtype << " | "
+			<< std::setw(5) << std::setprecision(2) << stat->second.delay << " | "
+			<< std::setw(3) << "Inf" << " | "
+			<< std::setw(5) << stat->second.ct << " | "
+			<< std::setw(5) << std::setprecision(2) << "\n";
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(wait_time));
-
-			// compact
-			std::cout << std::setw(10) << device->GetType() << " - ["
-				<< std::setw(5) << device->GetTaskQueue()->size() << "], #"
-				<< std::setw(5) << task_id << " done in "
-				<< std::setw(5) << wait_time << " ms\n";
-
-			// detailed
-			//std::cout << "\nDevice type: " << device->GetType() << ", queue size: " << device->GetTaskQueue()->size() << ", task " << task_id << " resolved after " << device_time << " ms.\n";
-		}
-		else if (JOB_IS_DONE)
-		{
-			break;
-		}
+		std::cout << "------------------------------------------------\n";
 	}
 }
