@@ -2,8 +2,8 @@
 
 |  №  |            TASK             |   STATUS   |
 | :-: | :-------------------------- | :--------: |
-|  1  | Ternary search              |      x     |
-|  2  | Gradient method             |      x     |
+|  1  | Ternary search              |  **done**  |
+|  2  | Gradient descent            |  **done**  |
 |  3  | Matrix chain multiplication |      x     |
 |  4  | Knapsack                    |  **done**  |
 |  5  | Ladder                      |  **done**  |
