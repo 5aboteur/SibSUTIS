@@ -4,7 +4,7 @@
 | :-: | :-------------------------- | :--------: |
 |  1  | Ternary search              |  **done**  |
 |  2  | Gradient descent            |  **done**  |
-|  3  | Matrix chain multiplication |      x     |
+|  3  | Matrix chain multiplication |  **done**  |
 |  4  | Knapsack                    |  **done**  |
 |  5  | Ladder                      |  **done**  |
 |  6  | Lepus                       |  **done**  |
