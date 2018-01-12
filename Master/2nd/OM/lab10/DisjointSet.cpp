@@ -1,4 +1,4 @@
-#include "DisjointSet.h"
+#include "disjointset.h"
 
 DisjointSet::DisjointSet(int _n) : n(_n)
 {
