@@ -1,4 +1,4 @@
-# Optimization methods
+# Optimization Methods
 
 |  №  |            TASK             |   STATUS   |
 | :-: | :-------------------------- | :--------: |
