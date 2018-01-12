@@ -1,6 +1,6 @@
-﻿#include <algorithm>
-#include "Graph.h"
-#include "DisjointSet.h"
+#include <algorithm>
+#include "graph.h"
+#include "disjointset.h"
 
 int kruskalMST(Graph g);
 
