@@ -11,7 +11,7 @@
 |  7  | Descent                     |  **done**  |
 |  8  | King                        |  **done**  |
 |  9  | Dijkstra's algorithm        |  **done**  |
-| 10  | Kruskal's algorithm         |      x     |
+| 10  | Kruskal's algorithm         |  **done**  |
 | 11  | Bellman–Ford algorithm      |      x     |
 | 12  | Floyd–Warshall algorithm    |      x     |
 | 13  | Breadth-first search        |  **done**  |
