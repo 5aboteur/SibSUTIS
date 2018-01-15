@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../tool/src/tool.h"
+#include "../../tool/src/tool.h"
 
 #define EPS 0.001
 #define PI 3.14159265358979323846

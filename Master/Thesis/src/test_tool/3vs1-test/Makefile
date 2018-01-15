@@ -1,6 +1,6 @@
-name := heat-2d
-objects := heat-2d.o
-lib_dir := ../tool/lib
+name := test_umq
+objects := test_umq.o
+lib_dir := ../../tool/lib
 
 CC := mpicc
 CFLAGS := -std=gnu99 -Wall -pedantic -O2
@@ -16,5 +16,5 @@ clean:
 	rm -f *.o $(name)
 
 run:
-	$(EXEC) -np 4 ./$(name) 1024 1024
+	$(EXEC) -np 4 ./$(name)
 
