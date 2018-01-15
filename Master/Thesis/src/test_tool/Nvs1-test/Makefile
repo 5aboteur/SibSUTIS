@@ -16,5 +16,5 @@ clean:
 	rm -f *.o $(name)
 
 run:
-	$(EXEC) -np 4 ./$(name)
+	$(EXEC) -np 6 ./$(name)
 
