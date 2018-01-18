@@ -11,12 +11,12 @@
 #define MAX_SOURCE_SIZE (0x100000)
 #include <CL/cl.h>
 
-#define WIDTH		1024
-#define HEIGHT		1024
+#define WIDTH		256
+#define HEIGHT		256
 #define ASPECT		WIDTH / HEIGHT
 #define NPIX		WIDTH * HEIGHT
 
-#define SAMPLES		100
+#define SAMPLES		1024
 #define SCALE		1.0F / SAMPLES
 #define MAX_DEPTH	1
 #define NOBJ		9
