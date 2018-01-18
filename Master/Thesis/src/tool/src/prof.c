@@ -17,8 +17,6 @@ int MPI_Init(int * argc, char *** argv)
 	MPI_Datatype datatype;
 	MPI_T_enum enumtype;
 
-	comm = MPI_COMM_WORLD;
-
 	// Init MPI
 	TRY (PMPI_Init(argc, argv));
 
@@ -61,6 +59,21 @@ int MPI_Init(int * argc, char *** argv)
 //	assert(datatype == MPI_INT);
 //	assert(bind == MPI_T_BIND_MPI_COMM);
 
+	if (*argc == 3 && 2 == atoi(*argv[3]))
+	{
+		int commsize;
+		MPI_Comm_size(MPI_COMM_WORLD, &commsize);
+
+		int dims[2] = {0, 0}, periodic[2] = {0, 0};
+		MPI_Dims_create(commsize, 2, dims);
+
+		MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periodic, 0, &comm);
+	}
+	else
+	{
+		comm = MPI_COMM_WORLD;
+	}
+
 	// Create MPI tools interface session
 	TRY (PMPI_T_pvar_session_create(&session));
 
@@ -75,6 +88,37 @@ int MPI_Init(int * argc, char *** argv)
 	return MPI_SUCCESS;
 }
 
+int MPI_Recv(void * buffer,
+			 int count,
+			 MPI_Datatype datatype,
+			 int source,
+			 int tag,
+			 MPI_Comm comm,
+			 MPI_Status * status)
+{
+	int umq_sz;
+
+	TRY (PMPI_T_pvar_read(session, umq_sz_handle, &umq_sz));
+
+	printf("%d -- %d\n", recv_cnt + 1, umq_sz);
+	plot_values[recv_cnt] = (double)umq_sz;
+	recv_cnt++;
+	usleep(delay_ms);
+
+	return PMPI_Recv(buffer, count, datatype, source, tag, comm, status);
+}
+
+int MPI_Send(const void * buffer,
+			 int count,
+			 MPI_Datatype datatype,
+			 int source,
+			 int tag,
+			 MPI_Comm comm)
+{
+	usleep(delay_ms);
+	return PMPI_Send(buffer, count, datatype, source, tag, comm);
+}
+
 int MPI_Irecv(void * buffer,
 			 int count,
 			 MPI_Datatype datatype,
@@ -87,9 +131,9 @@ int MPI_Irecv(void * buffer,
 
 	TRY (PMPI_T_pvar_read(session, umq_sz_handle, &umq_sz));
 
-//	printf("%d -- %d\n", recv_cnt + 1, umq_sz);
+	printf("%d -- %d\n", recv_cnt + 1, umq_sz);
 	plot_values[recv_cnt] = (double)umq_sz;
-	recv_cnt++;
+	recv_cnt++;	// hmm.. not threadsafe?! but final value is OK
 	usleep(delay_ms);
 
 	return PMPI_Irecv(buffer, count, datatype, source, tag, comm, request);

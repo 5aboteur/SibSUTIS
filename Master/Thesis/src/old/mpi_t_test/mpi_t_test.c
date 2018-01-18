@@ -19,11 +19,7 @@ void _print_title(char *str, int n);
 
 int main(int argc, char *argv[])
 {
-    int i, err, size, rank, dest, src, tag = 1337;
-    int cvar_val, pvar_val, count;
-    int threadsupport;
-
-    MPI_Status status;
+    int err, size, rank, count, threadsupport;
 
     MPI_T_pvar_session session;
     MPI_T_pvar_handle umq_sz_handler;
@@ -52,6 +48,8 @@ int main(int argc, char *argv[])
 
         err = print_all_cvars();
         if (err != MPI_SUCCESS) return err;
+
+		int cvar_val;
 
         // 42 ~> MPIR_CVAR_CH3_EAGER_MAX_MSG_SIZE
         err = get_cvar_value(42, MPI_COMM_WORLD, &cvar_val);
@@ -266,8 +264,7 @@ int print_all_cvars(void)
 
 int print_all_pvars(void)
 {
-    int i, err, namelen, num, bind, verbose,
-        varclass, readonly, continuous, atomic;
+    int i, err, namelen, num, bind, verbose, readonly, continuous, atomic;
     char name[NAMELEN];
 
     MPI_Datatype datatype;

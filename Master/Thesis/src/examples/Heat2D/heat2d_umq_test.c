@@ -40,9 +40,7 @@
 #define NELEMS(x) (sizeof((x)) / sizeof((x)[0]))
 #define IND(i, j) ((i) * (nx + 2) + (j))
 
-double plot_values[10000];
-
-//pthread_t plot_thr;
+pthread_t plot_thr;
 
 void *xcalloc(size_t nmemb, size_t size);
 int get_block_size(int n, int rank, int nprocs);
@@ -60,6 +58,7 @@ int main(int argc, char *argv[])
     // Create 2D grid of processes: commsize = px * py
     MPI_Comm cartcomm;
     int dims[2] = {0, 0}, periodic[2] = {0, 0};
+
     MPI_Dims_create(commsize, 2, dims);
     int px = dims[0];
     int py = dims[1];
@@ -156,9 +155,20 @@ int main(int argc, char *argv[])
 
     int niters = 0;
 
+	if (rank == 0)
+	{
+		int *total_iters = (int *)malloc(sizeof(int));
+		*total_iters = 242 * commsize - commsize;
+
+		if (pthread_create(&plot_thr, NULL, plot, (void *)total_iters))
+		{
+			fprintf(stderr, "Cannot create plot thread.\n");
+		}
+	}
+
     while (1) {
         niters++;
-		printf("%d\n", niters);
+
         // Update interior points
         for (int i = 1; i <= ny; i++) {
             for (int j = 1; j <= nx; j++) {
@@ -239,6 +249,14 @@ int main(int argc, char *argv[])
     } else {
         MPI_Reduce(prof, NULL, NELEMS(prof), MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
     }
+
+	if (rank == 0)
+	{
+		if (pthread_join(plot_thr, NULL))
+		{
+			fprintf(stderr, "Cannot join plot thread.\n");
+		}
+	}
 
     MPI_Finalize();
     return 0;

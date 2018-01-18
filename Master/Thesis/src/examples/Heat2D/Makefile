@@ -1,5 +1,5 @@
-name := heat-2d
-objects := heat-2d.o
+name := heat2d_umq_test
+objects := heat2d_umq_test.o
 lib_dir := ../../tool/lib
 
 CC := mpicc
@@ -16,5 +16,4 @@ clean:
 	rm -f *.o $(name)
 
 run:
-	$(EXEC) -np 4 ./$(name) 1024 1024
-
+	$(EXEC) -np 4 ./$(name) 1024 1024 2

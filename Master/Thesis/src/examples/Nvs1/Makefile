@@ -1,5 +1,5 @@
-name := test_umq
-objects := test_umq.o
+name := nvs1_umq_test
+objects := nvs1_umq_test.o
 lib_dir := ../../tool/lib
 
 CC := mpicc
@@ -16,5 +16,4 @@ clean:
 	rm -f *.o $(name)
 
 run:
-	$(EXEC) -np 6 ./$(name)
-
+	$(EXEC) -np 4 ./$(name) --rendezvous
