@@ -1,6 +1,6 @@
 #include "prof.h"
 
-extern double plot_values[10000];
+double plot_values[10000];
 int recv_cnt;
 int delay_ms = 5000;
 

@@ -1,13 +1,13 @@
 #include "gnuplot_i.h"
 #include "plot.h"
 
-double plot_values[10000];
+extern double plot_values[10000];
 extern int recv_cnt;
 extern int delay_ms;
 
 void *plot(void *arg)
 {
-	int i = 0;
+//	int i = 0;
 	int total_msg_cnt = *((int *)arg);
 
 	gnuplot_ctrl *h;
