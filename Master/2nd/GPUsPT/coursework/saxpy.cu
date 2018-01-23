@@ -56,8 +56,8 @@ int main(void)
                 int N = 1 << i;
                 std::cout << N;
                 fout << test_native_saxpy(N, 2.0f, 1.0f, 2.0f) << " ";
-           fout << test_cublas_saxpy(N, 2.0f, 1.0f, 2.0f) << " ";
-           fout << test_thrust_saxpy(N, 2.0f, 1.0f, 2.0f) << " ";
+                fout << test_cublas_saxpy(N, 2.0f, 1.0f, 2.0f) << " ";
+                fout << test_thrust_saxpy(N, 2.0f, 1.0f, 2.0f) << " ";
                 fout << std::endl;
         }
 
@@ -174,18 +174,21 @@ float test_thrust_saxpy(int N, float a, float x_val, float y_val)
         float result = a * x_val + y_val;
 
         thrust::host_vector<float> h_x(N), h_y(N);
+        
         thrust::fill(h_x.begin(), h_x.end(), x_val);
         thrust::fill(h_y.begin(), h_y.end(), y_val);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         thrust::device_vector<float> d_x = h_x;
         thrust::device_vector<float> d_y = h_y;
+        
         thrust::transform(d_x.begin(), d_x.end(), d_y.begin(), d_y.begin(), saxpy_functor(a));
 
         h_y = d_y;
 
         auto t2 = std::chrono::high_resolution_clock::now();
         auto diff_time = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
+        
         assert(std::all_of(h_y.cbegin(), h_y.cend(), [&](float value) { return value == result; }));
 
         return diff_time.count();
