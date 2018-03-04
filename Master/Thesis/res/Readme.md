@@ -51,6 +51,7 @@
 15. [A Preliminary Analysis of the MPI Queue Characterisitics](http://www.cs.sandia.gov/~rbbrigh/papers/mpi-queue-apps.pdf)
 16. [A Preliminary Analysis of the MPI Queue Characterisitics of Several Applications](https://pdfs.semanticscholar.org/14d3/c4a56abb7680d6523c0bc88d80899b631a09.pdf)
 17. [MPI Queue characteristics of large-scale applications](https://cug.org/5-publications/proceedings_attendee_lists/CUG10CD/pages/1-program/final_program/CUG10_Proceedings/pages/authors/16-18Thursday/16A-Keller-paper.pdf)
+18. [Message Progression in Parallel Computing](https://htor.inf.ethz.ch/publications/img/hoefler-ib-threads.pdf)
 --------------------------------------------------------------------
 ### Other
 1. [Parallel](http://parallel.ru/)
