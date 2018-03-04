@@ -49,6 +49,8 @@
 13. [Shared Receive Queue - MVAPICH](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.8328&rep=rep1&type=pdf)
 14. [OpenMPI Pt2Pt Communications Methodology](https://www.open-mpi.org/papers/euro-pvmmpi-2004-p2p/euro-pvmmpi-2004-p2p.pdf)
 15. [A Preliminary Analysis of the MPI Queue Characterisitics](http://www.cs.sandia.gov/~rbbrigh/papers/mpi-queue-apps.pdf)
+16. [A Preliminary Analysis of the MPI Queue Characterisitics of Several Applications](https://pdfs.semanticscholar.org/14d3/c4a56abb7680d6523c0bc88d80899b631a09.pdf)
+17. [MPI Queue characteristics of large-scale applications](https://cug.org/5-publications/proceedings_attendee_lists/CUG10CD/pages/1-program/final_program/CUG10_Proceedings/pages/authors/16-18Thursday/16A-Keller-paper.pdf)
 --------------------------------------------------------------------
 ### Other
 1. [Parallel](http://parallel.ru/)
