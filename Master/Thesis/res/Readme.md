@@ -1,7 +1,8 @@
 # MPI
 
 ### Books
-1. [Introduction to HPC for Scientists and Engineers](https://pdfs.semanticscholar.org/d45e/c41b45caa8686fa1788d9191ab4044a18a83.pdf)
+1. [Architecture of Computing Systems](https://nsu.ru/xmlui/bitstream/handle/nsu/935/khor32.pdf)
+2. [Introduction to HPC for Scientists and Engineers](https://pdfs.semanticscholar.org/d45e/c41b45caa8686fa1788d9191ab4044a18a83.pdf)
 
 ### Sites
 1. [Forum](http://mpi-forum.org/)
