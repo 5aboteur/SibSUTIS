@@ -1,5 +1,8 @@
 # MPI
 
+### Books
+1. [Introduction to HPC for Scientists and Engineers](https://pdfs.semanticscholar.org/d45e/c41b45caa8686fa1788d9191ab4044a18a83.pdf)
+
 ### Sites
 1. [Forum](http://mpi-forum.org/)
 2. [Survey](https://computing.llnl.gov/tutorials/mpi/)
