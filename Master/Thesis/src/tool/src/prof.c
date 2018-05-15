@@ -11,6 +11,8 @@ static MPI_T_pvar_handle umq_sz_handle;
 static int rank;
 static int size;
 
+static int iters;
+
 int MPI_Init(int *argc, char ***argv)
 {
 	int count, desc_len, err, i, name_len, num, pvar_index, thread_sup;
@@ -78,9 +80,9 @@ int MPI_Init(int *argc, char ***argv)
 		exit(1);
 	}
 
-	int iters = atoi((*argv)[1]);
+	iters = atoi((*argv)[1]);
 
-	plot_values = calloc(size * iters, sizeof(double));
+	plot_values = calloc(iters, sizeof(double));
 	plot_flag = 1;
 
 	// Start (don't work?)
@@ -104,8 +106,10 @@ int MPI_Recv(void * buffer,
 	TRY (PMPI_T_pvar_read(session, umq_sz_handle, &umq_sz));
 
 //	printf("%d -- %d\n", recv_cnt + 1, umq_sz);
-	plot_values[recv_cnt] = (double)umq_sz;
-	recv_cnt++;
+	if (recv_cnt < iters) {
+		plot_values[recv_cnt] = (double)umq_sz;
+		recv_cnt++;
+	}
 
 	return PMPI_Recv(buffer, count, datatype, source, tag, comm, status);
 }
@@ -134,8 +138,10 @@ int MPI_Irecv(void * buffer,
 	TRY (PMPI_T_pvar_read(session, umq_sz_handle, &umq_sz));
 
 //	printf("%d -- %d\n", recv_cnt + 1, umq_sz);
-	plot_values[recv_cnt] = (double)umq_sz;
-	recv_cnt++;
+	if (recv_cnt < iters) {
+		plot_values[recv_cnt] = (double)umq_sz;
+		recv_cnt++;
+	}
 
 	return PMPI_Irecv(buffer, count, datatype, source, tag, comm, request);
 }

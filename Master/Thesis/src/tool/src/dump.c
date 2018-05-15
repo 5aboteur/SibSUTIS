@@ -1,18 +1,15 @@
 #include "dump.h"
 
-int dump(void)
+void dump(void)
 {
 	int i;
-	char fname[NAMESIZ];
-
-	// Prefix
-	strncpy(fname, "umqtracker_", 11);
+	char dname[NAMESIZ];
 
 	time_t t = time(NULL);
 	struct tm lt = *localtime(&t);
 	char tmp[64];
 
-	strftime(tmp, sizeof(tmp), "%c", lt);
+	strftime(tmp, sizeof(tmp), "%c", &lt);
 
 	for (i = 0; i < 63 && tmp[i] != '\0'; i++) {
 		if (tmp[i] == ' ')
@@ -21,20 +18,18 @@ int dump(void)
 
 	tmp[i] = '\0';
 
-	// + localtime = dirname
-	strcpy(fname + 11, tmp);
+	// prefix + localtime = dirname
+	sprintf(dname, "umqtracker_%s", tmp);
 
 	char cmd[CMDSIZ];
 
 	// Create dir with this name
-	strncpy(cmd, "mkdir ", 6);
-	strcpy(cmd + 6, fname);
-	system(cmd);
+	sprintf(cmd, "mkdir %s", dname);
+	if (system(cmd) < 0) return;
 
 	printf(" = %s\n", cmd);
-	printf("Directory '%s' successfully created.\n", fname);
+	printf("Directory '%s' successfully created.\n", dname);
 
-	// Get the img name
 	char iname[NAMESIZ];
 	DIR *dir_fp;
 	struct dirent *de;
@@ -42,12 +37,20 @@ int dump(void)
 	dir_fp = opendir(".");
 	if (dir_fp == NULL) {
 		fprintf(stderr, "Cannot open this directory.\n");
-		return -1;
+		return;
 	}
 
+	// Get the img name
 	while ((de = readdir(dir_fp)) != NULL) {
-		if (strncmp(".png", de->d_name, 4) == 0) {
-			strcpy(iname, de->d_name);
+		int ext;
+
+		for (ext = 0; de->d_name[ext] != '\0'; ext++)
+			if (de->d_name[ext] == '.') break;
+
+		if (strncmp(".png", de->d_name + ext, 4) == 0) {
+			printf("> %s %zu\n", de->d_name, strlen(de->d_name));
+			sprintf(iname, "%s", de->d_name);
+			iname[strlen(de->d_name)] = '\0';
 			break;
 		}
 	}
@@ -56,17 +59,17 @@ int dump(void)
 
 	printf("Image name: %s\n", iname);
 
-	long len = strlen(fname);
+	char fname[NAMESIZ];
 
-	// + .html extension = filename
-	strncpy(fname + len, ".html", 5);
+	// prefix + localtime + .html extension = filename
+	sprintf(fname, "%s.html", dname);
 
 	FILE *html_fp;
 
 	html_fp = fopen(fname, "w");
 	if (html_fp == NULL) {
 		fprintf(stderr, "Cannot open the file '%s'.\n", fname);
-		return -1;
+		return;
 	}
 
 	// Fill HTML page with info
@@ -79,16 +82,12 @@ int dump(void)
 
 	printf("File '%s' successfully created.\n", fname);
 
-	memset(cmd, 0, CMDSIZ];
+	memset(cmd, 0, CMDSIZ);
 
 	// Move .png and .html files into created dir
-	strncpy(cmd, "mv ", 3);
-	strcpy(cmd + 3, fname);
-	strncpy(cmd + 3 + len, " ", 1);
-	strcpy(cmd + 4 + len, iname);
-	system(cmd);
+	sprintf(cmd, "mv %s %s %s", fname, iname, dname);
+
+	if (system(cmd) < 0) return;
 
 	printf(" = %s\n", cmd);
-
-	return 0;
 }

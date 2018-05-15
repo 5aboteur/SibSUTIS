@@ -16,4 +16,4 @@ clean:
 	rm -f *.o gnuplot_tmpdatafile* $(name)
 
 run:
-	$(EXEC) -np 4 ./$(name) 100 --eager
+	$(EXEC) -np 4 ./$(name) 1000 --eager
