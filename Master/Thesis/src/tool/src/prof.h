@@ -8,14 +8,14 @@
 #include <string.h>
 #include <unistd.h>
 
-//#include "gnuplot_i.h"
-
 #define TRY(func)                           \
     do {                                    \
         err = (func);                       \
         if (err != MPI_SUCCESS) {           \
-			if (plot_flag)                  \
-				free(plot_values);          \
+			if (umq_plot_flag)              \
+				free(umq_plot_values);      \
+			if (pmq_plot_flag)              \
+				free(pmq_plot_values);      \
             MPI_Abort(MPI_COMM_WORLD, err); \
 		}                                   \
     } while (0)
@@ -26,10 +26,12 @@
 
 int err;
 
-double *plot_values;
-int plot_flag;
-int recv_cnt;
+double *umq_plot_values;
+int umq_plot_flag;
+int umq_recv_cnt;
 
-//void plot(void);
+double *pmq_plot_values;
+int pmq_plot_flag;
+int pmq_recv_cnt;
 
 #endif

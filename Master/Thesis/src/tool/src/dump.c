@@ -7,8 +7,10 @@ void dump(void)
 
 	time_t t = time(NULL);
 	struct tm lt = *localtime(&t);
+	char current_date[64];
 	char tmp[64];
 
+	strftime(current_date, sizeof(current_date), "%c", &lt);
 	strftime(tmp, sizeof(tmp), "%c", &lt);
 
 	for (i = 0; i < 63 && tmp[i] != '\0'; i++) {
@@ -51,7 +53,7 @@ void dump(void)
 			printf("> %s %zu\n", de->d_name, strlen(de->d_name));
 			sprintf(iname, "%s", de->d_name);
 			iname[strlen(de->d_name)] = '\0';
-			break;
+//			break;
 		}
 	}
 
@@ -74,9 +76,13 @@ void dump(void)
 
 	// Fill HTML page with info
 	fprintf(html_fp,
-		"<!DOCTYPE html>\n<html>\n<body>\n\n"
-		"<img src=\"%s\" alt=\"UMQ size\">"
-		"</body></html>", iname);
+		"<!DOCTYPE html>\n<html>\n<body>\n\n<h1>MPI RECVQ Tracker</h1>"
+		"<strong>Nto1 task</strong> - N processes simultaneously "
+		"send NITERS messages to one receiving process.</p>"
+		"<img src=\"%s\" alt=\"queue sizes compare\">"
+		"<br><hr><br><div align=right>%s<br>made by 5aboteur</div>"
+		"</body></html>",
+		iname, current_date);
 
 	fclose(html_fp);
 
