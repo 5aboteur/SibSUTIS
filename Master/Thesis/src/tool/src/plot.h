@@ -1,11 +1,13 @@
-#ifndef _PLOT_H_
-#define _PLOT_H_
+#ifndef __PLOTTING_IF_H__
+#define __PLOTTING_IF_H__
 
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-void *plot(void *arg);
+#include "gnuplot_i.h"
+
+void plot(void);
 
 #endif
