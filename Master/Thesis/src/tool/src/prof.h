@@ -12,10 +12,18 @@
     do {                                    \
         err = (func);                       \
         if (err != MPI_SUCCESS) {           \
-			if (umq_plot_flag)              \
-				free(umq_plot_values);      \
-			if (pmq_plot_flag)              \
-				free(pmq_plot_values);      \
+			if (pmq_sz_plot_flag)           \
+				free(pmq_sz_plot_values);   \
+			if (umq_sz_plot_flag)           \
+				free(umq_sz_plot_values);   \
+			if (pmq_ma_plot_flag)           \
+				free(pmq_ma_plot_values);   \
+			if (umq_ma_plot_flag)           \
+				free(umq_ma_plot_values);   \
+			if (pmq_st_plot_flag)           \
+				free(pmq_st_plot_values);   \
+			if (umq_st_plot_flag)           \
+				free(umq_st_plot_values);   \
             MPI_Abort(MPI_COMM_WORLD, err); \
 		}                                   \
     } while (0)
@@ -26,12 +34,36 @@
 
 int err;
 
-double *umq_plot_values;
-int umq_plot_flag;
-int umq_recv_cnt;
+int recv_cnt;
 
-double *pmq_plot_values;
-int pmq_plot_flag;
-int pmq_recv_cnt;
+/* Posted queue size */
+
+double *pmq_sz_plot_values;
+int pmq_sz_plot_flag;
+
+/* Unexpected queue size */
+
+double *umq_sz_plot_values;
+int umq_sz_plot_flag;
+
+/* Posted queue matching attempts */
+
+double *pmq_ma_plot_values;
+int pmq_ma_plot_flag;
+
+/* Unexpected queue matching attempts */
+
+double *umq_ma_plot_values;
+int umq_ma_plot_flag;
+
+/* Posted queue searching time spent */
+
+double *pmq_st_plot_values;
+int pmq_st_plot_flag;
+
+/* Unexpected queue searching time spent */
+
+double *umq_st_plot_values;
+int umq_st_plot_flag;
 
 #endif

@@ -2,7 +2,7 @@ name := libumqtr
 objects := dump.o gnuplot_i.o plot.o prof.o
 
 CC := mpicc
-CFLAGS := -std=gnu99 -Wall -Wextra -Werror -pedantic -O2
+CFLAGS := -std=gnu99 -Wall -Wextra -pedantic -O2
 SRC := src
 
 all: dump gnuplot plot prof pack move clean

@@ -29,10 +29,10 @@ void dump(void)
 	sprintf(cmd, "mkdir %s", dname);
 	if (system(cmd) < 0) return;
 
-	printf(" = %s\n", cmd);
+	printf(" => %s\n", cmd);
 	printf("Directory '%s' successfully created.\n", dname);
 
-	char iname[NAMESIZ];
+	char iname[3][NAMESIZ];
 	DIR *dir_fp;
 	struct dirent *de;
 
@@ -42,6 +42,8 @@ void dump(void)
 		return;
 	}
 
+	i = 0;
+
 	// Get the img name
 	while ((de = readdir(dir_fp)) != NULL) {
 		int ext;
@@ -50,16 +52,16 @@ void dump(void)
 			if (de->d_name[ext] == '.') break;
 
 		if (strncmp(".png", de->d_name + ext, 4) == 0) {
-			printf("> %s %zu\n", de->d_name, strlen(de->d_name));
-			sprintf(iname, "%s", de->d_name);
-			iname[strlen(de->d_name)] = '\0';
-//			break;
+			printf(" %s %zu\n", de->d_name, strlen(de->d_name));
+			sprintf(iname[i], "%s", de->d_name);
+			iname[i][strlen(de->d_name)] = '\0';
+			i++;
 		}
 	}
 
 	closedir(dir_fp);
 
-	printf("Image name: %s\n", iname);
+	printf("Image names: %s, %s, %s\n", iname[0], iname[1], iname[2]);
 
 	char fname[NAMESIZ];
 
@@ -74,15 +76,46 @@ void dump(void)
 		return;
 	}
 
+	char task_name[NAMESIZ];
+	char desc_name[NAMESIZ];
+
+	memset(&task_name, 0, sizeof(task_name));
+	memset(&desc_name, 0, sizeof(desc_name));
+
+	char ch;
+
+	i = 0;
+
+	printf("Input task name: ");
+	while (((ch = fgetc(stdin)) != '\n') && (i < NAMESIZ))
+		task_name[i++] = ch;
+
+	i = 0;
+
+	printf("Input description: ");
+	while (((ch = fgetc(stdin)) != '\n') && (i < NAMESIZ))
+		desc_name[i++] = ch;
+
 	// Fill HTML page with info
 	fprintf(html_fp,
-		"<!DOCTYPE html>\n<html>\n<body>\n\n<h1>MPI RECVQ Tracker</h1>"
-		"<strong>Nto1 task</strong> - N processes simultaneously "
-		"send NITERS messages to one receiving process.</p>"
-		"<img src=\"%s\" alt=\"queue sizes compare\">"
+		"<!DOCTYPE html>\n"
+		"<html>\n"
+		"<body>\n"
+		"<header>\n\n"
+		"<h1 align=\"center\">MPI RECVQ Tracker<sup style=\"font-size:15px\"> beta </sup></h1>"
+		"<hr><br>\n</header>\n"
+		"<section>\n"
+		"<strong>TASK:</strong> %s <br><strong>DESC:</strong> %s <br></p>\n"
+		"<img width=630 height=475 src=\"%s\" alt=\"image1\">"
+		"<img width=630 height=475 src=\"%s\" alt=\"image2\">"
+		"<img width=630 height=475 src=\"%s\" alt=\"image3\">\n"
+		"</section>\n"
+		"<footer>\n"
 		"<br><hr><br><div align=right>%s<br>made by 5aboteur</div>"
-		"</body></html>",
-		iname, current_date);
+		"</footer>\n"
+		"</body>\n"
+		"</html>",
+		task_name, desc_name, iname[0], iname[1], iname[2], current_date);
 
 	fclose(html_fp);
 
@@ -91,9 +124,9 @@ void dump(void)
 	memset(cmd, 0, CMDSIZ);
 
 	// Move .png and .html files into created dir
-	sprintf(cmd, "mv %s %s %s", fname, iname, dname);
+	sprintf(cmd, "mv %s %s %s %s %s", fname, iname[0], iname[1], iname[2], dname);
 
 	if (system(cmd) < 0) return;
 
-	printf(" = %s\n", cmd);
+	printf(" => %s\n", cmd);
 }

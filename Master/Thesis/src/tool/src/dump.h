@@ -1,6 +1,7 @@
 #ifndef __DUMPING_IF_H__
 #define __DUMPING_IF_H__
 
+#include <assert.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
