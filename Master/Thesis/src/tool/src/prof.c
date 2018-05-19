@@ -1,27 +1,7 @@
 #include "dump.h"
 #include "plot.h"
 #include "prof.h"
-/*
-extern int recv_cnt;
 
-extern double *pmq_sz_plot_values;
-extern int pmq_sz_plot_flag;
-
-extern double *umq_sz_plot_values;
-extern int umq_sz_plot_flag;
-
-extern double *pmq_ma_plot_values;
-extern int pmq_ma_plot_flag;
-
-extern double *umq_ma_plot_values;
-extern int umq_ma_plot_flag;
-
-extern double *pmq_st_plot_values;
-extern int pmq_st_plot_flag;
-
-extern double *umq_st_plot_values;
-extern int umq_st_plot_flag;
-*/
 static MPI_T_pvar_session session;
 
 static MPI_T_pvar_handle pmq_sz_handle;
@@ -32,10 +12,12 @@ static MPI_T_pvar_handle umq_sz_handle;
 static MPI_T_pvar_handle umq_ma_handle;
 static MPI_T_pvar_handle umq_st_handle;
 
+static MPI_T_pvar_handle umq_bs_handle;
+
 static int rank;
 static int size;
 
-static int iters;
+//static int iters;
 
 int MPI_Init(int *argc, char ***argv)
 {
@@ -71,7 +53,9 @@ int MPI_Init(int *argc, char ***argv)
 	int pmq_st_pvar_index = -1;
 	int umq_st_pvar_index = -1;
 
-	int pvars_to_handle = 6;
+	int umq_bs_pvar_index = -1;
+
+	int pvars_to_handle = 7;
 
 	// Iterate thru all pvars until don`t get the desired one
 	for (i = 0; i < num; i++) {
@@ -131,6 +115,14 @@ int MPI_Init(int *argc, char ***argv)
 			assert(datatype == MPI_DOUBLE);
 		}
 
+		if (strcmp(name, "unexpected_recvq_buffer_size") == 0) {
+			umq_bs_pvar_index = i;
+			pvars_to_handle--;
+			assert(umq_bs_pvar_index >= 0);
+			assert(var_class == MPI_T_PVAR_CLASS_LEVEL);
+			assert(datatype == MPI_UNSIGNED_LONG_LONG);
+		}
+
 		if (!pvars_to_handle) break;
 	}
 
@@ -157,6 +149,9 @@ int MPI_Init(int *argc, char ***argv)
 	assert(count == 1);
 
 	TRY (PMPI_T_pvar_handle_alloc(session, umq_st_pvar_index, &comm, &umq_st_handle, &count));
+	assert(count == 1);
+
+	TRY (PMPI_T_pvar_handle_alloc(session, umq_bs_pvar_index, &comm, &umq_bs_handle, &count));
 	assert(count == 1);
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -205,7 +200,7 @@ int MPI_Recv(void * buffer,
 			 MPI_Status * status)
 {
 	unsigned int pmq_sz, umq_sz;
-	unsigned long long pmq_ma, umq_ma;
+	unsigned long long pmq_ma, umq_ma, umq_bs;
 	double pmq_st, umq_st;
 
 	TRY (PMPI_T_pvar_read(session, pmq_sz_handle, &pmq_sz));
@@ -217,7 +212,10 @@ int MPI_Recv(void * buffer,
 	TRY (PMPI_T_pvar_read(session, pmq_st_handle, &pmq_st));
 	TRY (PMPI_T_pvar_read(session, umq_st_handle, &umq_st));
 
-//	printf("%d -- %d\n", umq_recv_cnt + 1, umq_sz);
+	TRY (PMPI_T_pvar_read(session, umq_bs_handle, &umq_bs));
+
+	printf("%llu\n", umq_bs);
+
 	if (recv_cnt < iters) {
 		pmq_sz_plot_values[recv_cnt] = (double)pmq_sz;
 		umq_sz_plot_values[recv_cnt] = (double)umq_sz;
@@ -229,8 +227,13 @@ int MPI_Recv(void * buffer,
 		umq_st_plot_values[recv_cnt] = umq_st;
 
 		recv_cnt++;
+
+		if (umq_bs_min > umq_bs) umq_bs_min = umq_bs;
+		if (umq_bs_max < umq_bs) umq_bs_max = umq_bs;
+
+		umq_bs_tot += umq_bs;
 	}
-//	printf("enta\n");
+
 	return PMPI_Recv(buffer, count, datatype, source, tag, comm, status);
 }
 
@@ -242,6 +245,7 @@ int MPI_Send(const void * buffer,
 			 MPI_Comm comm)
 {
 	// Stub
+	usleep(10000);
 	return PMPI_Send(buffer, count, datatype, source, tag, comm);
 }
 
@@ -254,7 +258,7 @@ int MPI_Irecv(void * buffer,
 			 MPI_Request * request)
 {
 	unsigned int pmq_sz, umq_sz;
-	unsigned long long pmq_ma, umq_ma;
+	unsigned long long pmq_ma, umq_ma, umq_bs;
 	double pmq_st, umq_st;
 
 	TRY (PMPI_T_pvar_read(session, pmq_sz_handle, &pmq_sz));
@@ -266,7 +270,10 @@ int MPI_Irecv(void * buffer,
 	TRY (PMPI_T_pvar_read(session, pmq_st_handle, &pmq_st));
 	TRY (PMPI_T_pvar_read(session, umq_st_handle, &umq_st));
 
-//	printf("%d -- %d\n", recv_cnt + 1, umq_sz);
+	TRY (PMPI_T_pvar_read(session, umq_bs_handle, &umq_bs));
+
+	printf("%llu\n", umq_bs);
+
 	if (recv_cnt < iters) {
 		pmq_sz_plot_values[recv_cnt] = (double)pmq_sz;
 		umq_sz_plot_values[recv_cnt] = (double)umq_sz;
@@ -278,6 +285,11 @@ int MPI_Irecv(void * buffer,
 		umq_st_plot_values[recv_cnt] = umq_st;
 
 		recv_cnt++;
+
+		if (umq_bs_min > umq_bs) umq_bs_min = umq_bs;
+		if (umq_bs_max < umq_bs) umq_bs_max = umq_bs;
+
+		umq_bs_tot += umq_bs;
 	}
 
 	return PMPI_Irecv(buffer, count, datatype, source, tag, comm, request);
@@ -305,6 +317,8 @@ int MPI_Finalize(void)
 
 	TRY (PMPI_T_pvar_handle_free(session, &pmq_st_handle));
 	TRY (PMPI_T_pvar_handle_free(session, &umq_st_handle));
+
+	TRY (PMPI_T_pvar_handle_free(session, &umq_bs_handle));
 
 	TRY (PMPI_T_pvar_session_free(&session));
 	TRY (PMPI_T_finalize());

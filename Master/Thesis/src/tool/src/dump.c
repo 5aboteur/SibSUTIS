@@ -1,5 +1,11 @@
 #include "dump.h"
 
+extern int iters;
+
+extern unsigned long long umq_bs_tot;
+extern unsigned long long umq_bs_min;
+extern unsigned long long umq_bs_max;
+
 void dump(void)
 {
 	int i;
@@ -110,12 +116,18 @@ void dump(void)
 		"<img width=630 height=475 src=\"%s\" alt=\"image2\">"
 		"<img width=630 height=475 src=\"%s\" alt=\"image3\">\n"
 		"</section>\n"
+		"<section><br>\n"
+		"<strong>Unexpected queue allocated buffer size ~> </strong>"
+		"min = %llu, max = %llu, avg = %llu (%.3lf Mb)\n"
+		"</section>\n"
 		"<footer>\n"
 		"<br><hr><br><div align=right>%s<br>made by 5aboteur</div>"
 		"</footer>\n"
 		"</body>\n"
 		"</html>",
-		task_name, desc_name, iname[0], iname[1], iname[2], current_date);
+		task_name, desc_name, iname[0], iname[1], iname[2],
+		umq_bs_min, umq_bs_max, (umq_bs_tot / iters),
+		(umq_bs_tot / iters / 1024.0 / 1024.0), current_date);
 
 	fclose(html_fp);
 

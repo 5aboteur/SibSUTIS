@@ -33,7 +33,7 @@
 #define DESCLEN 256
 
 int err;
-
+int iters;
 int recv_cnt;
 
 /* Posted queue size */
@@ -65,5 +65,11 @@ int pmq_st_plot_flag;
 
 double *umq_st_plot_values;
 int umq_st_plot_flag;
+
+/* Unexpected queue allocated buffer size */
+
+unsigned long long umq_bs_tot;
+unsigned long long umq_bs_max;
+unsigned long long umq_bs_min;
 
 #endif
