@@ -323,7 +323,7 @@ int MPI_Finalize(void)
 	TRY (PMPI_T_pvar_session_free(&session));
 	TRY (PMPI_T_finalize());
 
-	if (rank == 3) {
+	if (rank == 0) {
 		plot();
 		dump();
 	}
