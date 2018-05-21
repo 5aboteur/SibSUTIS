@@ -1,5 +1,5 @@
-name := nto1_task
-objects := nto1_task.o
+name := halo3d
+objects := halo3d.o
 lib_dir := ../../tool/lib
 
 CC := mpicc
@@ -16,4 +16,4 @@ clean:
 	rm -f *.o gnuplot_tmpdatafile* $(name)
 
 run:
-	$(EXEC) -np 4 ./$(name) 1000 --eager
+	$(EXEC) -np 4 ./$(name) 100000

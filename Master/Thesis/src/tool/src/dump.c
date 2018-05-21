@@ -82,25 +82,25 @@ void dump(void)
 		return;
 	}
 
-	char task_name[NAMESIZ];
-	char desc_name[NAMESIZ];
+	char task_name[NAMESIZ] = "test";
+	char desc_name[NAMESIZ] = "test";
 
 	memset(&task_name, 0, sizeof(task_name));
 	memset(&desc_name, 0, sizeof(desc_name));
 
-	char ch;
+//	char ch;
 
 	i = 0;
 
 	printf("Input task name: ");
-	while (((ch = fgetc(stdin)) != '\n') && (i < NAMESIZ))
-		task_name[i++] = ch;
+//	while (((ch = fgetc(stdin)) != '\n') && (i < NAMESIZ))
+//		task_name[i++] = ch;
 
 	i = 0;
 
 	printf("Input description: ");
-	while (((ch = fgetc(stdin)) != '\n') && (i < NAMESIZ))
-		desc_name[i++] = ch;
+//	while (((ch = fgetc(stdin)) != '\n') && (i < NAMESIZ))
+//		desc_name[i++] = ch;
 
 	// Fill HTML page with info
 	fprintf(html_fp,

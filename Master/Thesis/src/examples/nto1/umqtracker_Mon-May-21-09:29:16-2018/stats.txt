@@ -1,0 +1,4 @@
+# Statistics:
+#           Time Taken               Msgs/s                 MB/s
+             81.913292            36.624093             0.000349
+

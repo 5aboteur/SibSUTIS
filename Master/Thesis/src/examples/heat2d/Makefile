@@ -1,5 +1,5 @@
-name := nvs1_umq_test
-objects := nvs1_umq_test.o
+name := heat2d
+objects := heat2d.o
 lib_dir := ../../tool/lib
 
 CC := mpicc
@@ -13,7 +13,7 @@ name:
 	$(CC) $(CFLAGS) $(name).c $(LDFLAGS) -o $(name)
 
 clean:
-	rm -f *.o gnuplot_tmpdatafile* $(name)
+	rm -f gnuplot_* *.o *.dat $(name)
 
 run:
-	$(EXEC) -np 4 ./$(name) 100 --eager
+	$(EXEC) -np 4 ./$(name) 100

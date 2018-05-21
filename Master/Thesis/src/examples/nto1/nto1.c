@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 
 #include "../../tool/src/tool.h"
 
@@ -40,6 +40,10 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	struct timeval start, end;
+
+	gettimeofday(&start, NULL);
+
 	// Select test
 	if (!strcmp(argv[2], "--eager") || !strcmp(argv[2], "-e")) {
 		TRY (test_eager(rank, commsize));
@@ -49,6 +53,21 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Specify test you want to run.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		exit(1);
+	}
+
+	gettimeofday(&end, NULL);
+
+	if (rank == 0) {
+		const double time_taken = (((double)end.tv_sec) + (double)end.tv_usec * 1.0e-6) -
+			(((double)start.tv_sec) + (double)start.tv_usec * 1.0e-6);
+		const double msgs_recv = ((double)(ITERS * (commsize - 1)));
+		const double data_recv = (((double)ITERS) * ((double)EAGER_MSG_SIZE) *
+			((double)(commsize - 1))) / (1024.0 * 1024.0);
+
+		printf("# Statistics:\n");
+		printf("# %20s %20s %20s\n", "Time Taken", "Msgs/s", "MB/s");
+		printf("  %20.6f %20f %20.6f\n", time_taken, msgs_recv / time_taken,
+			data_recv / time_taken);
 	}
 
 	TRY (MPI_Finalize());

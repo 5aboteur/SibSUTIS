@@ -25,8 +25,8 @@ void plot(void)
 	gnuplot_plot_x(hsz, umq_sz_plot_values, recv_cnt, "unexpected recvq length");
 
 	printf("Press <ENTER> to continue...");
-	while (getchar()!='\n') {}
-
+//	while (getchar()!='\n') {}
+	sleep(10);
     gnuplot_close(hsz);
 
 	/* Plotting match attempts */
@@ -41,7 +41,8 @@ void plot(void)
 	gnuplot_plot_x(hma, umq_ma_plot_values, recv_cnt, "unexpected recvq match attempts");
 
 	printf("Press <ENTER> to continue...");
-	while (getchar()!='\n') {}
+//	while (getchar()!='\n') {}
+	sleep(10);
 
     gnuplot_close(hma);
 
@@ -57,7 +58,8 @@ void plot(void)
 	gnuplot_plot_x(hst, umq_st_plot_values, recv_cnt, "unexpected recvq search time");
 
 	printf("Press <ENTER> to continue...");
-	while (getchar()!='\n') {}
+//	while (getchar()!='\n') {}
+	sleep(10);
 
     gnuplot_close(hst);
 }

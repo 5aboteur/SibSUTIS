@@ -214,7 +214,7 @@ int MPI_Recv(void * buffer,
 
 	TRY (PMPI_T_pvar_read(session, umq_bs_handle, &umq_bs));
 
-	printf("%llu\n", umq_bs);
+//	printf("%d: %u - %u\n", source, pmq_sz, umq_sz);
 
 	if (recv_cnt < iters) {
 		pmq_sz_plot_values[recv_cnt] = (double)pmq_sz;
@@ -272,7 +272,7 @@ int MPI_Irecv(void * buffer,
 
 	TRY (PMPI_T_pvar_read(session, umq_bs_handle, &umq_bs));
 
-	printf("%llu\n", umq_bs);
+//	printf("%d: %u - %u\n", source, pmq_sz, umq_sz);
 
 	if (recv_cnt < iters) {
 		pmq_sz_plot_values[recv_cnt] = (double)pmq_sz;
@@ -323,7 +323,7 @@ int MPI_Finalize(void)
 	TRY (PMPI_T_pvar_session_free(&session));
 	TRY (PMPI_T_finalize());
 
-	if (rank == 0) {
+	if (rank == 3) {
 		plot();
 		dump();
 	}
