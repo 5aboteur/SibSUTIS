@@ -57,6 +57,7 @@
 17. [MPI Queue characteristics of large-scale applications](https://cug.org/5-publications/proceedings_attendee_lists/CUG10CD/pages/1-program/final_program/CUG10_Proceedings/pages/authors/16-18Thursday/16A-Keller-paper.pdf)
 18. [Message Progression in Parallel Computing](https://htor.inf.ethz.ch/publications/img/hoefler-ib-threads.pdf)
 19. [Process-Based Asynchronous Progress Model for MPI Point-to-Point Communication](http://www.mcs.anl.gov/~balaji/pubs/2017/hpcc/hpcc17.casper-pt2pt.pdf)
+20. [Accelerating MPI Message Matching by a Data Clustering Strategy] (http://post.queensu.ca/~pprl/papers/HPCS-2017.pdf)
 --------------------------------------------------------------------
 ### Other
 1. [Parallel](http://parallel.ru/)
