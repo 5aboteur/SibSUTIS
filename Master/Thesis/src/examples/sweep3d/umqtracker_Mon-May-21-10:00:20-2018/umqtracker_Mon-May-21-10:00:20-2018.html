@@ -6,11 +6,40 @@
 <h1 align="center">MPI RECVQ Tracker<sup style="font-size:15px"> beta </sup></h1><hr><br>
 </header>
 <section>
-<strong>TASK:</strong> test <br><strong>DESC:</strong> test <br></p>
+<strong>TASK:</strong> sweep3d communication pattern (N=4, iters=500, px=2, py=2, (Nx x Ny x Nz)=250000, KBA=10, vars=1) <br>
+<strong>DESC:</strong> 
+Some forms of physics within DOE's high-performance science workload
+have a strong level of dependencies which affect their communication
+patterns. One such case, is the use of sweeping algorithms. In this
+approach, a 3D data domain is decomposed over a 2D array of MPI ranks.
+Each processor is therefore given a "pencil" of data to process since
+X and Y data dimensions are divided by the 2D array of MPI ranks, the
+data in the Z-dimension is held on each processor. The communication
+proceeds by having the processor in one corner compute its solution
+for slices of its data array pencil (the Z-dimension is divided into
+slices). The face data from this slice is communicated to adjacent
+processors in X and in Y, who then compute their first slice while
+the original processor moves onto the next slice in its Z-dimension.
+The "sweep" therefore spreads outwards from the origin vertex and
+passes through the data/processor array.
+
+Once the sweep is fully solved for each slice in a pencil on one
+of the other vertices, a new sweep is started from a different
+vertex. Eventually sweeps are started from each vertex in the 3D
+data array (leading to 8 sweeps in total).
+
+Communication sweeps are generally regarded as stressing network 
+latency because the messages are typically quite small and so few
+of them are in-flight at the same time that network bandwidth is
+very rarely stressed. The pattern which makes each MPI rank wait
+for upstream data to arrive can also cause significant delays to
+build up in very large rank counts/systems.
+<br>
 <img width=630 height=475 src="1.png" alt="image1"><img width=630 height=475 src="3.png" alt="image2"><img width=630 height=475 src="2.png" alt="image3">
 </section>
 <section><br>
-<strong>Unexpected queue allocated buffer size ~> </strong>min = 0, max = 4000, avg = 1000 (0.001 Mb)
+<strong>Elapsed time: </strong>16.6s, <strong>Msg/s: </strong>156.3, <strong>MBytes/s: </strong>9.4012<br>
+<strong>UMQ allocated buffer size ~> </strong>[80 - 4120] avg = 1000 (0.001 MBytes)
 </section>
 <footer>
 <br><hr><br><div align=right>Mon May 21 10:00:20 2018<br>made by 5aboteur</div></footer>
